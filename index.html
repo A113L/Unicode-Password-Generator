@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="icon" type="image/svg" href="favicon.svg" />
+  <title>Password Generator</title>
+  <style>
+    html, body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #1a1a2e, #16213e);
+      color: #eee;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      background-repeat: no-repeat;
+      background-position: center center;
+      background-size: cover;
+      background-attachment: fixed;
+    }
+
+    .container {
+      max-width: 480px;
+      width: 100%;
+      background: rgba(11, 12, 16, 0.85);
+      border-radius: 12px;
+      box-shadow: 0 0 20px #66fcf1cc;
+      padding: 2rem 2.5rem 2.5rem 2.5rem;
+      backdrop-filter: blur(10px);
+      margin-top: 2rem;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 1rem;
+      color: #f5f6fa;
+      text-shadow: 0 0 15px #66fcf1, 0 0 25px #45a29e;
+      letter-spacing: 1.5px;
+    }
+
+    label {
+      display: block;
+      margin-top: 1.3rem;
+      font-weight: 700;
+      color: #a0f0f7;
+      letter-spacing: 0.03em;
+    }
+
+    input[type="number"] {
+      width: 100%;
+      max-width: 120px;
+      padding: 0.5rem 0.7rem;
+      font-size: 1rem;
+      margin-top: 0.4rem;
+      border-radius: 6px;
+      border: none;
+      outline: none;
+      background-color: #0f3460;
+      color: #c7ecee;
+      box-shadow: inset 0 0 8px #0a1a3a;
+      transition: box-shadow 0.3s ease;
+    }
+
+    input[type="number"]:focus {
+      box-shadow: 0 0 10px #66fcf1;
+    }
+
+    button {
+      margin-top: 2rem;
+      padding: 0.8rem 2rem;
+      font-size: 1.1rem;
+      cursor: pointer;
+      background: linear-gradient(45deg, #45a29e, #66fcf1);
+      color: #0b0c10;
+      border: none;
+      border-radius: 10px;
+      box-shadow: 0 6px 18px rgba(102, 252, 241, 0.7);
+      transition: background 0.3s ease, transform 0.2s ease;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+    }
+
+    button:hover {
+      background: linear-gradient(45deg, #66fcf1, #45a29e);
+      transform: scale(1.05);
+    }
+
+    .back-button {
+      display: inline-block;
+      margin-bottom: 1.5rem;
+      padding: 0.6rem 1.2rem;
+      background: #0b0c10;
+      color: #66fcf1;
+      border: 2px solid #66fcf1;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      transition: background 0.3s ease, color 0.3s ease, transform 0.2s ease;
+    }
+
+    .back-button:hover {
+      background: #66fcf1;
+      color: #0b0c10;
+      transform: scale(1.05);
+    }
+
+    .results {
+      margin-top: 2.5rem;
+      max-height: 60vh;
+      overflow-y: auto;
+    }
+
+    .password-block {
+      background: #0b0c10cc;
+      padding: 1.2rem 1.5rem;
+      margin-bottom: 1.3rem;
+      border-radius: 12px;
+      box-shadow: 0 0 15px #45a29eaa;
+      transition: box-shadow 0.3s ease;
+    }
+
+    .password-block:hover {
+      box-shadow: 0 0 25px #66fcf1dd;
+    }
+
+    .password-text {
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 1.3rem;
+      word-break: break-word;
+      color: #66fcf1;
+      user-select: all;
+    }
+
+    .entropy, .strength {
+      font-weight: 700;
+      color: #a0f0f7;
+      margin-top: 0.6rem;
+    }
+
+    #saveBtn {
+      display: none;
+      margin-top: 2rem;
+      background: #45a29e;
+      color: #0b0c10;
+      border: none;
+      border-radius: 10px;
+      padding: 0.7rem 2rem;
+      cursor: pointer;
+      font-weight: 700;
+      box-shadow: 0 6px 18px rgba(69, 162, 158, 0.6);
+      transition: background 0.3s ease, transform 0.2s ease;
+    }
+
+    #saveBtn:hover {
+      background: #66fcf1;
+      transform: scale(1.05);
+    }
+
+    .results::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .results::-webkit-scrollbar-thumb {
+      background-color: #45a29e88;
+      border-radius: 10px;
+    }
+
+    .results::-webkit-scrollbar-track {
+      background-color: transparent;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <a href="../index.html" class="back-button">&larr; Back</a>
+
+  <h1>Unicode Password Generator</h1>
+
+  <form id="passwordForm">
+    <label for="length">Password Length:</label>
+    <input type="number" id="length" name="length" min="1" max="100" value="20" required />
+    
+    <label for="count">Number of Passwords:</label>
+    <input type="number" id="count" name="count" min="1" max="1000" value="3" required />
+
+    <button type="submit">Generate Passwords</button>
+  </form>
+
+  <button id="saveBtn">Save Passwords to File</button>
+
+  <div class="results" id="results"></div>
+</div>
+
+<script>
+  const chars = [
+    "0","1","2","3","4","5","6","7","8","9",
+    "!","@","#","$","%","^","&","*","(",")","_","+","[","]","{","}","|",";",":",",",".","<",">","?","/","~","`",
+    ...("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"),
+    ..."ąćęłńóśźżĄĆĘŁŃÓŚŹŻ",
+    ..."äöüßÄÖÜ",
+    ..."абвгдеёжзийклмнопрстуфхцчшщъыьэюя",
+    ..."АБВГДЕЁЖЗИЙКЛМНОПРСТФХЦЧШЩЪЫЬЭЮЯ",
+    ..."èéêëēėęùúûüūîïíīįìôöòóœøãåáàâæçñ",
+    ..."กขคฆงจฉชซฌญฎฏฐฑฒณดตถทธนบปผฝพฟภมยรฤลฦวศษสหฬอฮ",
+    ..."अआइईउऊऋएऐओऔकखगघचछजझटठडढणतथदधनपफबभमयरलवशषसह",
+    ..."あいうえおかきくけこさしすせそたちつてとなにぬねの",
+    ..."アイウエオカキクケコサシスセソタチツテトナニヌネノ",
+    ..."漢字日本語中文测试字符",
+    ..."∞±≠∑∏√∫∂∆πµΩ≈≡≤≥∇",
+    ..."¢£¥€₩₪₹₽฿₫₴₦₲",
+    ..."★☆☀☁☂☃☄☠☢☣♠♣♥♦♪♫✔✖✳❄‼"
+  ].flat();
+
+  const uniqueChars = [...new Set(chars)];
+
+  function calculateEntropy(poolSize, length) {
+    return (Math.log2(poolSize) * length).toFixed(2);
+  }
+
+  function rateEntropy(entropy) {
+    const e = parseFloat(entropy);
+    if (e < 40) return "🔴 Very Weak";
+    if (e < 60) return "🟠 Weak";
+    if (e < 80) return "🟡 Moderate";
+    if (e < 100) return "🟢 Strong";
+    return "🟢🛡️ Very Strong";
+  }
+
+  function generatePassword(length) {
+    let pwd = "";
+    for(let i = 0; i < length; i++) {
+      const idx = Math.floor(Math.random() * uniqueChars.length);
+      pwd += uniqueChars[idx];
+    }
+    return pwd;
+  }
+
+  const form = document.getElementById("passwordForm");
+  const resultsDiv = document.getElementById("results");
+  const saveBtn = document.getElementById("saveBtn");
+
+  form.addEventListener("submit", e => {
+    e.preventDefault();
+    let length = parseInt(document.getElementById("length").value);
+    let count = parseInt(document.getElementById("count").value);
+
+    if(count > 1000) {
+      alert("Max number of passwords is 1000. Limiting to 1000.");
+      count = 1000;
+      document.getElementById("count").value = 1000;
+    }
+
+    const poolSize = uniqueChars.length;
+
+    resultsDiv.innerHTML = "";
+
+    for(let i = 1; i <= count; i++) {
+      const pwd = generatePassword(length);
+      const entropy = calculateEntropy(poolSize, length);
+      const strength = rateEntropy(entropy);
+
+      const block = document.createElement("div");
+      block.className = "password-block";
+
+      block.innerHTML = `
+        <div><strong>#${i}:</strong> <span class="password-text">${pwd}</span></div>
+        <div class="entropy">Entropy: ${entropy} bits</div>
+        <div class="strength">Strength: ${strength}</div>
+      `;
+      resultsDiv.appendChild(block);
+    }
+
+    saveBtn.style.display = count > 0 ? "block" : "none";
+  });
+
+  saveBtn.addEventListener("click", () => {
+    const blocks = resultsDiv.querySelectorAll(".password-text");
+    if (blocks.length === 0) {
+      alert("No passwords to save.");
+      return;
+    }
+
+    let fileContent = "Generated Passwords:\n\n";
+    blocks.forEach(block => {
+      fileContent += `${block.textContent}\n`;
+    });
+
+    const blob = new Blob([fileContent], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "passwords.txt";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  });
+</script>
+
+</body>
+</html>
