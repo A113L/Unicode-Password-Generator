@@ -168,7 +168,7 @@
                 </button>
             </div>
             <p class="text-gray-300 mb-4">
-                This interactive Bash script uses **OpenSSL (AES-256-CBC)** for strong encryption of files, providing an excellent way to secure your downloaded password list or any other sensitive file on Linux/macOS.
+                This interactive Bash script uses **OpenSSL (AES-256-CBC)** for strong encryption of files. The encryption now uses **PBKDF2** for key derivation to prevent brute-force attacks.
             </p>
 
             <!-- Bash Script Code Block -->
@@ -214,8 +214,8 @@ encrypt_file() {
 
     echo -e "\nEncrypting '$INPUT_FILE' to '$OUTPUT_FILE'..."
 
-    # Use openssl with the specified cipher method and password derived from the input
-    if openssl enc -"$CIPHER_METHOD" -salt -in "$INPUT_FILE" -out "$OUTPUT_FILE" -k "$PASSWORD"; then
+    # Use openssl with PBKDF2 for robust key derivation
+    if openssl enc -"$CIPHER_METHOD" -salt -pbkdf2 -in "$INPUT_FILE" -out "$OUTPUT_FILE" -k "$PASSWORD"; then
         echo -e "\033[32m[SUCCESS]\033[0m File encrypted successfully!"
         read -rp "Do you want to securely delete the original file '$INPUT_FILE'? (y/N): " DELETE_CONFIRM
         if [[ "$DELETE_CONFIRM" =~ ^[Yy]$ ]]; then
@@ -228,7 +228,7 @@ encrypt_file() {
                 # Fallback to standard removal if shred is not found (less secure)
                 rm -f "$INPUT_FILE"
                 echo -e "\033[33m[WARNING]\033[0m Original file deleted using standard 'rm' (less secure)."
-            \fi
+            fi
         fi
     else
         error_message "Encryption failed. Check your file path or permissions."
@@ -265,8 +265,8 @@ decrypt_file() {
 
     echo -e "\nDecrypting '$INPUT_FILE' to '$OUTPUT_FILE'..."
 
-    # Use openssl to decrypt
-    if openssl enc -d -"$CIPHER_METHOD" -in "$INPUT_FILE" -out "$OUTPUT_FILE" -k "$PASSWORD"; then
+    # Use openssl to decrypt, including -pbkdf2 to match the encryption method
+    if openssl enc -d -"$CIPHER_METHOD" -pbkdf2 -in "$INPUT_FILE" -out "$OUTPUT_FILE" -k "$PASSWORD"; then
         echo -e "\033[32m[SUCCESS]\033[0m File decrypted successfully!"
     else
         error_message "Decryption failed. Check your password or file integrity."
@@ -318,7 +318,7 @@ main_menu</code></pre>
                 <li>Run the script from your terminal: <code class="bg-gray-900 px-1 py-0.5 rounded text-sm font-mono text-indigo-400">./file_protector.sh</code></li>
             </ol>
             <p class="mt-4 text-sm text-red-400 font-medium">
-                <strong class="font-bold">Note:</strong> This script requires the <code class="bg-gray-900 px-1 py-0.5 rounded text-sm font-mono text-indigo-400">openssl</code> utility and the <code class="bg-gray-900 px-1 py-0.5 rounded text-sm font-mono text-indigo-400">shred</code> utility (for secure deletion) to be installed.
+                <strong class="font-bold">Note:</strong> This script requires the <code class="bg-gray-900 px-1 py-0.5 rounded text-sm font-mono text-indigo-400">openssl</code> utility (with PBKDF2 support) and the <code class="bg-gray-900 px-1 py-0.5 rounded text-sm font-mono text-indigo-400">shred</code> utility (for secure deletion) to be installed.
             </p>
 
         </section>
@@ -370,6 +370,11 @@ main_menu</code></pre>
             },
             'Dingbats & Misc': {
                 value: "★☆☀☁☂☃☄☠☢☣♠♣♥♦♪♫✔✖✳❄‼©€¡¢£¤¥¦§¨ª«¬®¯°±²³´µ¶·¸¹º»¼½¾¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿŁłŃńŅņŇňŊŋŌōŎŏŐőŒœŔŕŖŗŘřŚśŜŝŞşŠšŢţŤťŦŧŨũŪūŬŭŮůŰůŴŵŶŷŸŹźŻżŽžſƆƎƜɐɑɒɔɘəɛɜɞɟɡɢɥɨɪɬɮɯɰɴɵɶɷɸɹʁʇʌʍʎʞ",
+                enabled: false,
+                description: 'Punctuation, arrows, chess, and card symbols.'
+            },
+            'Emoji': {
+                value: "☹☺☻☼☽☾☿♀♁♂♃♄♅♆♇♈♉♊♋♌♍♎♏♐♑♒♓♔♕♖♗♘♙♚♛♜♝♞♟♠♡♢♣♤♥♦♧♨♩♪♫♬♭♮♯♲♳♴♵♶♷♸♹♺♻♼♽♾♿⚀⚁⚂⚃⚄⚅⚐⚑⚒⚓⚔⚕⚖⚗⚘⚙⚛⚜⚝⚞⚟⚠⚡⚢⚣⚤⚥⚦⚧⚨⚩⚪⚫⚬⚭⚮⚯⚰⚱⚲⚳⚴⚵⚶⚷⚸⚹⚺⚻⚼⛀⛁⛂⛃⛢⛤⛥⛦⛧⛨⛩⛪⛫⛬⛭⛮⛯⛰⛱⛲⛳⛴⛵⛶⛷⛸⛹⛺⛻⛼⛽⛾⛿✁✂✃✄✅✆✇✈✉✊✋✌✍✎✏✐✑✒✓✔✕✖✗✘✙✚✛✜✝✞✟✠✡✢✣✤✥✦✧✨✩✪✫✬✭✮✯✰✱✲✳✴✵✶✷✸✹✺✻✼✽✾✿❀❁❂❃❄❅❆❇❈❉❊❋❌❍❎❏❐❑❒❓❔❕❖❗❘❙❚❛❜❝❞❟❠❡❢❣❤❥❦❧➔➘➙➚➛➜➝➞➟➠➡➢➣➤➥➦➧➨➩➪➫➬➭➮➯➱➲➳➴➵➶➷➸➹➺➻➼➽➾⟰⟱⟲⟳⟴⟵⟶⟷⟸⟹⟺⟻⟼⟽⟾⟿⤀⤁⤂⤃⤄⤅⤆⤇⤈⤉⤊⤋⤌⤍⤎⤏⤐⤑⤒⤓⤔⤕⤖⤗⤘⤙⤚⤛⤜⤝⤞⤟⤠⤡⤢⤣⤤⤥⤦⤧⤨⤩⤪⤫⤬⤭⤮⤯⤰⤱⤲⤳⤴⤵⤶⤷⤸⤹⤺⤻⤼⤽⤾⤿0⥁⥂⥃⥄⥅⥆⥇⥈⥉⥊⥋⥌⥍⥎⥏⥐1⬀⬁⬂⬃⬄⬅⬆⬇⬈⬉⬊⬋⬌⬍⬎⬏⬐1⬒⬓⬔⬕⬖⬗⬘⬙⬚",
                 enabled: false,
                 description: 'Punctuation, arrows, chess, and card symbols.'
             },
