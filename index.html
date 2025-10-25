@@ -17,6 +17,31 @@
             opacity: 1;
             transform: translateY(0);
         }
+        /* Hide number input spinners */
+        input[type='number']::-webkit-inner-spin-button,
+        input[type='number']::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type='number'] {
+            -moz-appearance: textfield;
+        }
+        /* Custom scrollbar styling for the code block (for the bash script) */
+        .code-block::-webkit-scrollbar {
+            height: 8px;
+            width: 8px;
+        }
+        .code-block::-webkit-scrollbar-track {
+            background: #2d3748; /* bg-gray-700 equivalent */
+            border-radius: 10px;
+        }
+        .code-block::-webkit-scrollbar-thumb {
+            background: #4a5568; /* bg-gray-600 equivalent */
+            border-radius: 10px;
+        }
+        .code-block::-webkit-scrollbar-thumb:hover {
+            background: #718096; /* bg-gray-500 equivalent */
+        }
     </style>
 </head>
 <body class="bg-gray-900 text-gray-100 min-h-screen flex items-center justify-center p-4">
@@ -27,7 +52,7 @@
                 UNICODE Password Utility
             </h1>
             <p class="text-xl text-gray-400">
-                Cryptographically secure generation using a massive character pool.
+                Cryptographically secure generation using configurable character sets.
             </p>
         </header>
 
@@ -35,51 +60,67 @@
         <section class="mb-8 p-6 bg-gray-700 rounded-xl shadow-lg">
             <h2 class="text-2xl font-bold text-gray-100 mb-4 border-b border-indigo-600 pb-2">Generation Settings</h2>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <!-- Password Length -->
                 <div>
                     <label for="length" class="block text-sm font-medium text-gray-300 mb-2">Password Length</label>
                     <input type="number" id="length" value="20" min="8" max="128"
-                           class="w-full p-3 rounded-lg bg-gray-600 border border-gray-500 text-gray-100 focus:ring-indigo-500 focus:border-indigo-500 appearance-none transition duration-150">
+                            class="w-full p-3 rounded-lg bg-gray-600 border border-gray-500 text-gray-100 focus:ring-indigo-500 focus:border-indigo-500 appearance-none transition duration-150">
                     <p class="mt-1 text-sm text-gray-400">Recommended: 16 to 32 characters.</p>
                 </div>
 
-                <!-- Number of Passwords (Max updated to 10000) -->
+                <!-- Number of Passwords -->
                 <div>
                     <label for="count" class="block text-sm font-medium text-gray-300 mb-2">Number of Passwords</label>
                     <input type="number" id="count" value="3" min="1" max="10000"
-                           class="w-full p-3 rounded-lg bg-gray-600 border border-gray-500 text-gray-100 focus:ring-indigo-500 focus:border-indigo-500 appearance-none transition duration-150">
+                            class="w-full p-3 rounded-lg bg-gray-600 border border-gray-500 text-gray-100 focus:ring-indigo-500 focus:border-indigo-500 appearance-none transition duration-150">
                     <p class="mt-1 text-sm text-gray-400">Generate up to 10,000 passwords at once.</p>
                 </div>
             </div>
 
+            <!-- Character Set Options -->
+            <h3 class="text-xl font-bold text-gray-200 mb-3 border-t pt-4 border-gray-600">Included Character Sets</h3>
+            <div id="charset-options" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 text-sm">
+                <!-- Checkboxes will be dynamically inserted here by JavaScript -->
+            </div>
+            <p id="charset-warning" class="mt-3 text-sm text-orange-400 font-semibold hidden">
+                <span class="inline-block w-4 h-4 mr-1 bg-yellow-500 rounded-full animate-pulse"></span>
+                Warning: You must select at least one character set.
+            </p>
+
+
             <!-- Generate Button -->
             <button id="generate-button"
-                    class="mt-8 w-full py-4 text-xl font-bold rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white transition duration-300 transform hover:scale-[1.01] shadow-xl shadow-indigo-500/30">
-                Generate Passwords
+                    class="mt-8 w-full py-4 text-xl font-bold rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white transition duration-300 transform hover:scale-[1.01] shadow-xl shadow-indigo-500/30 disabled:bg-indigo-400 disabled:shadow-none disabled:transform-none flex items-center justify-center">
+                <span id="generate-text">Generate Passwords</span>
+                <svg id="loading-spinner" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
             </button>
         </section>
 
         <!-- Entropy and Strength Display -->
-        <section class="mb-8 p-6 bg-gray-700 rounded-xl shadow-lg grid grid-cols-1 md:grid-cols-2 gap-4">
+        <section class="mb-8 p-6 bg-gray-700 rounded-xl shadow-lg grid grid-cols-1 md:grid-cols-3 gap-4">
 
             <!-- Pool Size -->
             <div class="bg-gray-600 p-4 rounded-lg">
-                <p class="text-sm font-medium text-gray-300">Character Pool Size</p>
+                <p class="text-sm font-medium text-gray-300">Active Character Pool Size</p>
                 <p id="pool-size" class="text-2xl font-extrabold text-white mt-1">...</p>
             </div>
 
-            <!-- Entropy (UPDATED LABEL) -->
+            <!-- Entropy -->
             <div class="bg-gray-600 p-4 rounded-lg">
                 <p class="text-sm font-medium text-gray-300">Logarithmic Entropy (Bits)</p>
                 <p id="entropy-bits" class="text-2xl font-extrabold text-white mt-1">0.00 bits</p>
             </div>
 
             <!-- Strength Rating -->
-            <div class="md:col-span-2 bg-gray-600 p-4 rounded-lg">
+            <div class="bg-gray-600 p-4 rounded-lg">
                 <p class="text-sm font-medium text-gray-300">Estimated Strength Rating</p>
                 <p id="strength-rating" class="text-2xl font-extrabold text-red-500 mt-1">N/A</p>
             </div>
+
         </section>
 
         <!-- Password Output -->
@@ -92,6 +133,7 @@
             <!-- Secure Storage Warning -->
             <div class="mt-8 p-4 bg-red-900/40 border border-red-700 rounded-lg shadow-inner">
                 <p class="text-lg font-bold text-red-300 flex items-center mb-1">
+                    <!-- Lock Icon -->
                     <svg class="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M18 8a6 6 0 01-7.743 5.743L10 14l-.257-.257A6 6 0 1118 8zm-7.414 2.586a1 1 0 00-1.414 1.414l.707.707-.707.707a1 1 0 001.414 1.414l.707-.707 1.414 1.414a1 1 0 001.414-1.414l-.707-.707.707-.707a1 1 0 00-1.414-1.414l-.707.707-.707-.707z" clip-rule="evenodd"></path></svg>
                     CRITICAL: Secure Storage Required
                 </p>
@@ -103,130 +145,244 @@
             <!-- Download Section -->
             <div id="download-section" class="mt-6 pt-4 border-t border-gray-700">
                 <button id="download-button" class="w-full py-3 text-lg font-semibold rounded-lg bg-teal-600 hover:bg-teal-700 text-white transition duration-300 shadow-lg flex items-center justify-center">
+                    <!-- Download Icon -->
                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                    Download Passwords List (.txt)
+                    Download Passwords List (<span id="download-count">0</span>) (.txt)
                 </button>
             </div>
         </section>
 
-        <!-- Security Guide Section (EMBEDDED CONTENT) -->
+        <!-- BASH SCRIPT FILE ENCRYPTION GUIDE SECTION (Integrated from index.html) -->
         <section class="mt-4 p-6 bg-gray-700 rounded-2xl shadow-2xl">
-            <h2 class="text-3xl font-bold text-red-300 mb-4 flex items-center">
-                <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
-                🔒 OpenSSL File Encryption Guide (Linux/macOS)
-            </h2>
-            <p class="text-gray-300 mb-6 border-b border-indigo-600 pb-4">
-                This guide shows you how to encrypt the downloaded password list file (`unicode_passwords_X.txt`) using the powerful <strong>AES-256-CBC</strong> cipher via the OpenSSL command-line tool.
-            </p>
-
-            <!-- Prerequisites -->
-            <h3 class="text-xl font-semibold text-gray-100 mb-2">Prerequisites</h3>
-            <p class="text-gray-400 mb-6">
-                You must have <strong>OpenSSL</strong> installed on your system, which is standard on most Linux distributions and macOS.
-            </p>
-
-            <!-- Step 1 -->
-            <h3 class="text-xl font-semibold text-gray-100 mb-3 border-t pt-4 border-gray-600">Step 1: Encrypt the File</h3>
-            <p class="text-gray-400 mb-3">
-                Navigate to the directory where you downloaded your password file (e.g., <code class="bg-gray-800 p-1 rounded">~/Downloads</code>).
-            </p>
-
-            <!-- Table 1 -->
-            <div class="overflow-x-auto mb-4">
-                <table class="min-w-full divide-y divide-gray-600 rounded-lg overflow-hidden">
-                    <thead class="bg-indigo-700/50">
-                        <tr>
-                            <th class="px-4 py-2 text-left text-sm font-medium text-gray-100 uppercase tracking-wider">Command</th>
-                            <th class="px-4 py-2 text-left text-sm font-medium text-gray-100 uppercase tracking-wider">Description</th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-gray-800 divide-y divide-gray-700">
-                        <tr><td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-indigo-400"><code>enc</code></td><td class="px-4 py-3 text-sm text-gray-300">The encryption/decryption function.</td></tr>
-                        <tr><td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-indigo-400"><code>-aes-256-cbc</code></td><td class="px-4 py-3 text-sm text-gray-300">Specifies the encryption algorithm (AES 256-bit with Cipher Block Chaining).</td></tr>
-                        <tr><td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-indigo-400"><code>-salt</code></td><td class="px-4 py-3 text-sm text-gray-300">Adds a random salt to prevent dictionary attacks (highly recommended).</td></tr>
-                        <tr><td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-indigo-400"><code>-in</code></td><td class="px-4 py-3 text-sm text-gray-300">The <strong>input file</strong> (your plain text password list).</td></tr>
-                        <tr><td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-indigo-400"><code>-out</code></td><td class="px-4 py-3 text-sm text-gray-300">The <strong>output file</strong> (your new encrypted file).</td></tr>
-                    </tbody>
-                </table>
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 border-b border-indigo-600 pb-2">
+                <h2 class="text-3xl font-bold text-red-300 flex items-center mb-2 sm:mb-0">
+                    <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
+                    Bash Script: File Protection Utility
+                </h2>
+                <button id="copy-bash-button" class="flex items-center space-x-2 px-4 py-2 bg-red-600 text-white text-sm font-semibold rounded-lg shadow-md hover:bg-red-700 transition duration-150 transform hover:scale-[1.02] active:scale-[0.98]">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z" />
+                        <path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z" />
+                    </svg>
+                    <span>Copy Script</span>
+                </button>
             </div>
-
-            <h4 class="text-lg font-medium text-gray-200 mb-2">1.1. Execute the Encryption Command</h4>
-            <p class="text-gray-400 mb-2">Replace <code>[X]</code> with the number of passwords you generated (e.g., <code>3</code>).</p>
-            <div class="bg-gray-900 p-4 rounded-lg overflow-x-auto text-sm font-mono text-green-400 mb-4">
-                <code>openssl enc -aes-256-cbc -salt -in unicode_passwords_X.txt -out secure_passwords.enc</code>
-            </div>
-
-            <h4 class="text-lg font-medium text-gray-200 mb-2">1.2. Set Your Encryption Passphrase</h4>
-            <p class="text-gray-400 mb-2">After running the command, OpenSSL will prompt you to enter and verify your master password for this file.</p>
-            <p class="font-bold text-red-400 mt-2 p-2 bg-gray-900 rounded-lg">
-                CRITICAL: The passphrase you enter here is the **only way** to decrypt the file. Store it securely.
+            <p class="text-gray-300 mb-4">
+                This interactive Bash script uses **OpenSSL (AES-256-CBC)** for strong encryption of files, providing an excellent way to secure your downloaded password list or any other sensitive file on Linux/macOS.
             </p>
 
-            <h4 class="text-lg font-medium text-gray-200 mb-2 mt-4">1.3. Delete the Original File</h4>
-            <p class="text-gray-400 mb-2">Once the encrypted file (<code class="bg-gray-800 p-1 rounded">secure_passwords.enc</code>) is confirmed, securely delete the plain text original:</p>
-            <div class="bg-gray-900 p-4 rounded-lg overflow-x-auto text-sm font-mono text-green-400 mb-4">
-                <code>shred -zu unicode_passwords_X.txt</code>
+            <!-- Bash Script Code Block -->
+            <div class="bg-gray-900 text-green-300 rounded-xl shadow-inner code-block p-4 overflow-x-auto border border-gray-700 mb-6">
+                <pre><code id="bash-script-code" class="font-mono text-sm whitespace-pre-wrap">#!/bin/bash
+# -----------------------------------------------------------------------------
+# Interactive File Protector Script (Encryption/Decryption)
+# Dependencies: Requires the 'openssl' command-line tool.
+# Usage: Run in terminal: bash file_protector.sh
+# -----------------------------------------------------------------------------
+
+# Configuration
+ENCRYPT_EXT=".enc"
+CIPHER_METHOD="aes-256-cbc"
+
+# --- Utility Functions ---
+
+# Function to display error messages
+error_message() {
+    echo -e "\n\033[31m[ERROR]\033[0m $1"
+}
+
+# Function to get secure password input
+get_password() {
+    read -rsp "Enter password (will not be visible): " PASSWORD
+    echo "" # Add a newline after secure input
+}
+
+# --- Core Logic ---
+
+# 1. Encrypts a file
+encrypt_file() {
+    echo -e "\n--- File Encryption ---"
+    read -rp "Enter the filename to encrypt (e.g., secret.txt): " INPUT_FILE
+
+    if [ ! -f "$INPUT_FILE" ]; then
+        error_message "File '$INPUT_FILE' not found."
+        return 1
+    fi
+
+    OUTPUT_FILE="${INPUT_FILE}${ENCRYPT_EXT}"
+    get_password
+
+    echo -e "\nEncrypting '$INPUT_FILE' to '$OUTPUT_FILE'..."
+
+    # Use openssl with the specified cipher method and password derived from the input
+    if openssl enc -"$CIPHER_METHOD" -salt -in "$INPUT_FILE" -out "$OUTPUT_FILE" -k "$PASSWORD"; then
+        echo -e "\033[32m[SUCCESS]\033[0m File encrypted successfully!"
+        read -rp "Do you want to securely delete the original file '$INPUT_FILE'? (y/N): " DELETE_CONFIRM
+        if [[ "$DELETE_CONFIRM" =~ ^[Yy]$ ]]; then
+            # Check for 'shred' utility to perform secure, multi-pass file deletion.
+            if command -v shred >/dev/null 2>&1; then
+                # -u ensures file is overwritten, renamed, and deleted
+                shred -u "$INPUT_FILE"
+                echo -e "\033[33m[WARNING]\033[0m Original file securely deleted using shred (multi-pass overwrite)."
+            else
+                # Fallback to standard removal if shred is not found (less secure)
+                rm -f "$INPUT_FILE"
+                echo -e "\033[33m[WARNING]\033[0m Original file deleted using standard 'rm' (less secure)."
+            \fi
+        fi
+    else
+        error_message "Encryption failed. Check your file path or permissions."
+    fi
+}
+
+# 2. Decrypts a file
+decrypt_file() {
+    echo -e "\n--- File Decryption ---"
+    read -rp "Enter the encrypted filename (e.g., secret.txt.enc): " INPUT_FILE
+
+    if [ ! -f "$INPUT_FILE" ]; then
+        error_message "File '$INPUT_FILE' not found."
+        return 1
+    fi
+
+    # Determine output filename by stripping the encryption extension
+    OUTPUT_FILE="${INPUT_FILE%$ENCRYPT_EXT}"
+    if [ "$OUTPUT_FILE" == "$INPUT_FILE" ]; then
+        error_message "Input file does not end with '$ENCRYPT_EXT'. Specify the output filename manually."
+        read -rp "Enter the desired output filename: " OUTPUT_FILE
+        if [ -z "$OUTPUT_FILE" ]; then
+            error_message "No output filename provided. Aborting decryption."
+            return 1
+        fi
+    fi
+
+    if [ -f "$OUTPUT_FILE" ]; then
+        error_message "Output file '$OUTPUT_FILE' already exists. Aborting to prevent overwrite."
+        return 1
+    fi
+
+    get_password
+
+    echo -e "\nDecrypting '$INPUT_FILE' to '$OUTPUT_FILE'..."
+
+    # Use openssl to decrypt
+    if openssl enc -d -"$CIPHER_METHOD" -in "$INPUT_FILE" -out "$OUTPUT_FILE" -k "$PASSWORD"; then
+        echo -e "\033[32m[SUCCESS]\033[0m File decrypted successfully!"
+    else
+        error_message "Decryption failed. Check your password or file integrity."
+    fi
+}
+
+# --- Main Menu ---
+
+main_menu() {
+    echo "========================================="
+    echo "        File Protection Utility (Bash)     "
+    echo "========================================="
+    echo "1. Encrypt a File"
+    echo "2. Decrypt a File"
+    echo "3. Exit"
+    echo "========================================="
+
+    read -rp "Enter your choice (1-3): " CHOICE
+
+    case "$CHOICE" in
+        1)
+            encrypt_file
+            main_menu
+            ;;
+        2)
+            decrypt_file
+            main_menu
+            ;;
+        3)
+            echo -e "\nGoodbye! Data security is important."
+            exit 0
+            ;;
+        *)
+            error_message "Invalid choice. Please enter 1, 2, or 3."
+            main_menu
+            ;;
+    esac
+}
+
+# Start the main script process
+main_menu</code></pre>
             </div>
             
-            <!-- Step 2 -->
-            <h3 class="text-xl font-semibold text-gray-100 mb-3 border-t pt-4 border-gray-600">Step 2: Decrypt the File</h3>
-            <p class="text-gray-400 mb-3">
-                When you need to access your passwords, you must decrypt the <code class="bg-gray-800 p-1 rounded">.enc</code> file.
+            <h3 class="text-xl font-semibold text-gray-100 mb-3 border-t pt-4 border-gray-600">How to Use the Script:</h3>
+            <ol class="list-decimal list-inside space-y-2 text-gray-400">
+                <li>Click **Copy Script** above.</li>
+                <li>Save the copied code to a file named <code class="bg-gray-900 px-1 py-0.5 rounded text-sm font-mono text-indigo-400">file_protector.sh</code> on your Linux or macOS machine.</li>
+                <li>Make the script executable: <code class="bg-gray-900 px-1 py-0.5 rounded text-sm font-mono text-indigo-400">chmod +x file_protector.sh</code></li>
+                <li>Run the script from your terminal: <code class="bg-gray-900 px-1 py-0.5 rounded text-sm font-mono text-indigo-400">./file_protector.sh</code></li>
+            </ol>
+            <p class="mt-4 text-sm text-red-400 font-medium">
+                <strong class="font-bold">Note:</strong> This script requires the <code class="bg-gray-900 px-1 py-0.5 rounded text-sm font-mono text-indigo-400">openssl</code> utility and the <code class="bg-gray-900 px-1 py-0.5 rounded text-sm font-mono text-indigo-400">shred</code> utility (for secure deletion) to be installed.
             </p>
 
-            <!-- Table 2 -->
-            <div class="overflow-x-auto mb-4">
-                <table class="min-w-full divide-y divide-gray-600 rounded-lg overflow-hidden">
-                    <thead class="bg-indigo-700/50">
-                        <tr>
-                            <th class="px-4 py-2 text-left text-sm font-medium text-gray-100 uppercase tracking-wider">Command</th>
-                            <th class="px-4 py-2 text-left text-sm font-medium text-gray-100 uppercase tracking-wider">Description</th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-gray-800 divide-y divide-gray-700">
-                        <tr><td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-indigo-400"><code>enc</code></td><td class="px-4 py-3 text-sm text-gray-300">The encryption/decryption function.</td></tr>
-                        <tr><td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-indigo-400"><code>-d</code></td><td class="px-4 py-3 text-sm text-gray-300">Specifies the <strong>decryption</strong> mode.</td></tr>
-                        <tr><td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-indigo-400"><code>-aes-256-cbc</code></td><td class="px-4 py-3 text-sm text-gray-300">Use the same algorithm as encryption.</td></tr>
-                        <tr><td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-indigo-400"><code>-in</code></td><td class="px-4 py-3 text-sm text-gray-300">The <strong>encrypted input file</strong>.</td></tr>
-                        <tr><td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-indigo-400"><code>-out</code></td><td class="px-4 py-3 text-sm text-gray-300">The <strong>output file</strong> where the decrypted content will be saved.</td></tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <h4 class="text-lg font-medium text-gray-200 mb-2">2.1. Execute the Decryption Command</h4>
-            <div class="bg-gray-900 p-4 rounded-lg overflow-x-auto text-sm font-mono text-green-400 mb-4">
-                <code>openssl enc -d -aes-256-cbc -in secure_passwords.enc -out decrypted_passwords.txt</code>
-            </div>
-
-            <h4 class="text-lg font-medium text-gray-200 mb-2">2.2. Enter the Passphrase</h4>
-            <p class="text-gray-400 mb-2">OpenSSL will prompt you for the master passphrase you set in Step 1.</p>
-            <p class="text-gray-400 mb-2">Once successful, a new file named <code class="bg-gray-800 p-1 rounded">decrypted_passwords.txt</code> will appear.</p>
-            <p class="text-gray-400 mb-2"><strong>Remember to delete this plain text file when you are finished using the information!</strong></p>
-            <div class="bg-gray-900 p-4 rounded-lg overflow-x-auto text-sm font-mono text-green-400">
-                <code>shred -zu decrypted_passwords.txt</code>
-            </div>
-
         </section>
+
+    </div>
+
+    <!-- Notification element for the Bash script copy action (must be outside the main div) -->
+    <div id="bash-copy-notification" class="hidden fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-4 py-2 rounded-lg shadow-xl transition-opacity duration-300 z-50 opacity-0">
+        Bash Script copied to clipboard!
     </div>
 
     <script>
-        const UNICODE_POOL = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~" +
-            "ąćęłńóśźżĄĆĘŁŃÓŚŹŻäöüßÄÖÜ" +
-            "абвгдеёжзийклмнопрстуфхцчшщъыьэюяАБВГДЕЁЖЗИЙКЛМНОПРСТФХЦЧШЩЪЫЬЭЮЯ" +
-            "èéêëēėęùúûüūîïíīįìôöòóœøãåáàâæçñ" +
-            "กขคฆงจฉชซฌญฎฏฐฑฒณดตถทธนบปผฝพฟภมยรฤลऌวศษสหฬอฮ" +
-            "अआइईउऊऋएऐओऔकखगघचछजझटठडढणतथदधनपफबभमयरलवशषसह" +
-            "あいうえおかきくけこさしすせそたちつてとなにぬねのアイウエオカキクケコサシスセソタチツテトナニヌネノ" +
-            "漢字日本語中文测试字符∞±≠∑∏√∫∂∆πµΩ≈≡≤≥∇¢£¥€₩₪₹₽฿₫₴₦₲" +
-            "★☆☀☁☂☃☄☠☢☣♠♣♥♦♪♫✔✖✳❄‼" +
-            "©€¡¢£¤¥¦§¨ª«¬®¯°±²³´µ¶·¸¹º»¼½¾¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿŁłŃńŅņŇňŊŋŌōŎŏŐőŒœŔŕŖŗŘřŚśŜŝŞşŠšŢţŤťŦŧŨũŪūŬŭŮůŰůŴŵŶŷŸŹźŻżŽžſƆƎƜɐɑɒɔɘəɛɜɞɟɡɢɥɨɪɬɮɯɰɴɵɶɷɸɹʁʇʌʍʎʞΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩαβγδελμνξοπρςστυφχψωАБВГДЕЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдежзийклмнопрстуфхцчшщъыьэюяᴀᴁᴂᴃᴄᴅᴆᴇᴈᴉᴊᴋᴌᴍᴎᴏᴐᴑᴒᴓᴔᴕᴖᴗᴘᴙᴚᴛᴜᴝᴞᴟᴠᴡᴢᴣᴤᴥᴦᴧᴨᴩᴪẞỲỳỴỵỸỹ‐‑‒–—―‖‗‘’‚‛“”„‟†‡•‣․‥…‧‰‱′″‴‵‶‷‸‹›※‽‾‿⁀⁁⁂⁃⁄⁅⁆⁇⁈⁉⁊⁋⁌⁍⁎⁏⁐⁑⁒⁓⁔⁕⁗⁰ⁱ⁴⁵⁶⁷⁸⁹⁺⁻⁼⁽⁾ⁿ₀₁₂₃₄₅₆₇₈₉₊₋₌₍₎₠₡₢₣₤₥₦₧₨₫₭₮₯₰₱₲₳₴₵₶₷₸₹℀℁ℂ℃℄℅℆ℇ℈℉ℊℋℌℍℎℏℐℑℒℓ℔ℕ№℗℘ℙℚℛℜℝ℞℟℠℡™℣ℤ℥℧ℨ℩KÅℬℭ℮ℯℰℱℲℳℴℵℶℷℸ⅁⅂⅃⅄ⅅⅆⅇⅈⅉ⅋ⅎ⅐⅑⅒⅓⅔⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞⅟ⅠⅡⅢⅣⅤⅥⅦⅧⅨⅩⅪⅫⅬⅭⅮⅯⅰⅱⅲⅳⅴⅵⅶⅷⅸⅹⅺⅻⅼⅽⅾⅿↄ←↑→↓↔↕↖↗↘↙↚↛↜↝↞↟↠↡↢↣↤↥↦↧↨↩↪↫↬↭↮↯↰↱↲↳↴↵↶↷↸↹↺↻↼↽↾↿⇀⇁⇂⇃⇄⇅⇆⇇⇈⇉⇊⇋⇌⇍⇎⇏⇐⇑⇒⇓⇔⇕⇖⇗⇘⇙⇚⇛⇜⇝⇞⇟⇠⇡⇢⇣⇤⇥⇦⇧⇨⇩⇪⇫⇬⇭⇮⇯⇰⇱⇲⇳⇴⇵⇶⇷⇸⇹⇺⇻⇼⇽⇾⇿∀∁∂∃∄∅∆∇∈∉∊∋∌∍∎∏∐∑−∓∔∕∖∗∘∙√∛∜∝∞∟∠∡∢∣∤∥∦∧∨∩∪∫∬∭∮∯∰∱∲∳∴∵∶∷∸∹∺∻∼∽∾∿≀≁≂≃≄≅≆≇≈≉≊≋≌≍≎≏≐≑≒≓≔≕≖≗≘≙≚≛≜≝≞≟≠≡≢≣≤≥≦≧≨≩≪≫≬≭≮≯≰≱≲≳≴≵≶≷≸≹≺≻≼≽≾≿⊀⊁⊂⊃⊄⊅⊆⊇⊈⊉⊊⊋⊌⊍⊎⊏⊐⊑⊒⊓⊔⊕⊖⊗⊘⊙⊚⊛⊜⊝⊞⊟⊠⊡⊢⊣⊤⊥⊦⊧⊨⊩⊪⊫⊬⊭⊮⊯⊰⊱⊲⊳⊴⊵⊶⊷⊸⊹⊺⊻⊼⊽⊾⊿⋀⋁⋂⋃⋄⋅⋆⋇⋈⋉⋊⋋⋌⋍⋎⋏⋐⋑⋒⋓⋔⋕⋖⋗⋘⋙⋚⋛⋜⋝⋞⋟⋠⋡⋢⋣⋤⋥⋦⋧⋨⋩⋪⋫⋬⋭⋮⋯⋰⋱⌀⌁⌂⌃⌄⌅⌆⌇⌈⌉⌊⌋⌐⌑⌒⌓⌔⌕⌖⌗⌘⌙⌚⌛⌠⌡⌢⌣⌤⌥⌦⌧⌨⌫⌬⎛⎜⎝⎞⎟⎠⎡⎢⎣⎤⎥⎦⎧⎨⎩⎪⎫⎬⎭⏎⏏⏚⏛⏰⏱⏲⏳␢␣─━│┃┄┅┆┇┈┉┊┋┌┍┎┏┐┑┒┓└┕┖┗┘┙┚┛├┝┞┟┠┡┢┣┤┥┦┧┨┩┪┫┬┭┮┯┰┱┲┳┴┵┶┷┸┹┺┻┼┽┾┿╀╁╂╃╄╅╆╇╈╉╊╋╌╍╎╏═║╒╓╔╕╖╗╘╙╚╛╜╝╞╟╠╡╢╣╤╥╦╧╨╩╪╫╬╭╮╯╰╱╲╳╴╵╶╷╸╹╺╻╼╽╾╿▀ ▂▃▄▅▆▇█▉▊▋▌▍▎▏▐░▒▓▔▕▖▗▘▙▚▛▜▝▞▟■□▢▣▤▥▦▧▨▩▪▫▬▭▮▯▰▱▲△▴▵▶▷▸▹►▻▼▽▾▿◀◁◂◃◄◅◆◇◈◉◊○◌◍◎●◐◑◒◓◔◕◖◗◘◙◚◛◜◝◞◟◠◡◢◣◤◥◦◧◨◩◪◫◬◭◮◯◰◱◲◳◴◵◶◷◸◹◺◻◼◽◾◿☀☁☂☃☄★☆☇☈☉☊☋☌☍☎☏☐☑☒☓☔☕☖☗☘☙☚☛☜☝☞☟☠☡☢☣☤☥☦☧☩☪☫☬☭☮☯☰☱☲☳☴☵☶☷☸☹☺☻☼☽☾☿♀♁♂♃♄♅♆♇♈♉♊♋♌♍♎♏♐♑♒♓♔♕♖♗♘♙♚♛♜♝♞♟♠♡♢♣♤♥♦♧♨♩♪♫♬♭♮♯♲♳♴♵♶♷♸♹♺♻♼♽♾♿⚀⚁⚂⚃⚄⚅⚐⚑⚒⚓⚔⚕⚖⚗⚘⚙⚛⚜⚝⚞⚟⚠⚡⚢⚣⚤⚥⚦⚧⚨⚩⚪⚫⚬⚭⚮⚯⚰⚱⚲⚳⚴⚵⚶⚷⚸⚹⚺⚻⚼⛀⛁⛂⛃⛢⛤⛥⛦⛧⛨⛩⛪⛫⛬⛭⛮⛯⛰⛱⛲⛳⛴⛵⛶⛷⛸⛹⛺⛻⛼⛽⛾⛿✁✂✃✄✅✆✇✈✉✊✋✌✍✎✏✐✑✒✓✔✕✖✗✘✙✚✛✜✝✞✟✠✡✢✣✤✥✦✧✨✩✪✫✬✭✮✯✰✱✲✳✴✵✶✷✸✹✺✻✼✽✾✿❀❁❂❃❄❅❆❇❈❉❊❋❌❍❎❏❐❑❒❓❔❕❖❗❘❙❚❛❜❝❞❟❠❡❢❣❤❥❦❧➔➘➙➚➛➜➝➞➟➠➡➢➣➤➥➦➧➨➩➪➫➬➭➮➯➱➲➳➴➵➶➷➸➹➺➻➼➽➾⟰⟱⟲⟳⟴⟵⟶⟷⟸⟹⟺⟻⟼⟽⟾⟿⤀⤁⤂⤃⤄⤅⤆⤇⤈⤉⤊⤋⤌⤍⤎⤏⤐⤑⤒⤓⤔⤕⤖⤗⤘⤙⤚⤛⤜⤝⤞⤟⤠⤡⤢⤣⤤⤥⤦⤧⤨⤩⤪⤫⤬⤭⤮⤯⤰⤱⤲⤳⤴⤵⤶⤷⤸⤹⤺⤻⤼⤽⤾⤿⥀⥁⥂⥃⥄⥅⥆⥇⥈⥉⥊⥋⥌⥍⥎⥏⥐⥑⬀⬁⬂⬃⬄⬅⬆⬇⬈⬉⬊⬋⬌⬍⬎⬏⬐⬑⬒⬓⬔⬕⬖⬗⬘⬙⬚ⱠⱡⱣⱥⱦⱭⱯⱰ⸢⸣⸤⸥⸮〃 ﬀﬁﬂﬃﬄﬅﬆ﴾﴿﷼︐︑︒︓︔︕︖︗︘︙︰︱︲︳︴︵︶︷︸︹︺︻︼︽︾︿﹀﹁﹂﹃﹄﹅﹆﹉﹊﹋﹌﹍﹎﹏﹐﹑﹒﹔﹕﹖﹗﹘﹙﹚﹛﹜﹝﹞﹟﹠﹡﹢﹣﹤﹥﹦﹨﹩﹪﹫﻿！＂＃＄％＆＇（）＊＋，－．／０１２３４５６７８９：；＜＝＞？＠ＡＢＣＤＥＦＧＨＩＪＫＬＭＮＯＰＱＲＳＴＵＶＷＸＹＺ［＼］＾＿｀ａｂｃｄｅｆｇｈｉｊｋｌｍｎｏｐｑｒｓｔｕｖｗｘｙｚ｛｜｝～｟｠￠￡￢￣￤￥￦";
-
-        const POOL_SIZE = 2802; // Updated to reflect the massive new pool
+        // --- Character Pool Definitions (Refactored for clarity) ---
+        const CHAR_SETS = {
+            'Latin (Standard)': {
+                value: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~",
+                enabled: true, // Default enabled
+                description: 'English, numbers, and standard symbols.'
+            },
+            'Latin (Extended)': {
+                value: "ąćęłńóśźżĄĆĘŁŃÓŚŹŻäöüßÄÖÜèéêëēėęùúûüūîïíīįìôöòóœøãåáàâæçñ",
+                enabled: false,
+                description: 'Western and Central European accents.'
+            },
+            'Cyrillic': {
+                value: "абвгдеёжзийклмнопрстуфхцчшщъыьэюяАБВГДЕЁЖЗИЙКЛМНОПРСТФХЦЧШЩЪЫЬЭЮЯ",
+                enabled: false,
+                description: 'Russian and related languages.'
+            },
+            'Asian (CJK, Hiragana, Katakana)': {
+                value: "漢字日本語中文测试字符あいうえおかきくけこさしすせそたちつてとなにぬねのアイウエオカキクケコサシスセソタチツテトナニヌネノ",
+                enabled: false,
+                description: 'Chinese, Japanese, and Korean characters.'
+            },
+            'Greek/Coptic/Hebrew': {
+                value: "ΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩαβγδελμνξοπρςστυφχψω",
+                enabled: false,
+                description: 'Greek and related script characters.'
+            },
+            'Math/Symbols': {
+                value: "∞±≠∑∏√∫∂∆πµΩ≈≡≤≥∇¢£¥€₩₪₹₽฿₫₴₦₲∀∁∂∃∄∅∆∇∈∉∊∋∌∍∎∏∐∑−∓∔∕∖∗∘∙√∛∜∝∞∟∠∡∢∣∤∥∦∧∨∩∪∫∬∭∮∯∰∱∲∳∴∵∶∷∸∹∺∻∼∽∾∿≀≁≂≃≄≅≆≇≈≉≊≋≌≍≎≏≐≑≒≓≔≕≖≗≘≙≚≛≜≝≞≟≠≡≢≣≤≥≦≧≨≩≪≫≬≭≮≯≰≱≲≳≴≵≶≷≸≹≺≻≼≽≾≿⊀⊁⊂⊃⊄⊅⊆⊇⊈⊉⊊⊋⊌⊍⊎⊏⊐⊑⊒⊓⊔⊕⊖⊗⊘⊙⊚⊛⊜⊝⊞⊟⊠⊡⊢⊣⊤⊥⊦⊧⊨⊩⊪⊫⊬⊭⊮⊯⊰⊱⊲⊳⊴⊵⊶⊷⊸⊹⊺⊻⊼⊽⊾⊿⋀⋁⋂⋃⋄⋅⋆⋇⋈⋉⋊⋋⋌⋍⋎⋏⋐⋑⋒⋓⋔⋕⋖⋗⋘⋙⋚⋛⋜⋝⋞⋟⋠⋡⋢⋣⋤⋥⋦⋧⋨⋩⋪⋫⋬⋭⋮⋯⋰⋱",
+                enabled: false,
+                description: 'Mathematical operators and currency symbols.'
+            },
+            'Box & Geometric': {
+                value: "─━│┃┄┅┆┇┈┉┊┋┌┍┎┏┐┑┒┓└┕┖┗┘┙┚┛├┝┞┟┠┡┢┣┤┥┦┧┨┩┪┫┬┭┮┯┰┱┲┳┴┵┶┷┸┹┺┻┼┽┾┿╀╁╂╃╄╅╆╇╈╉╊╋╌╍╎╏═║╒╓╔╕╖╗╘╙╚╛╜╝╞╟╠╡╢╣╤╥╦╧╨╩╪╫╬╭╮╯╰╱╲╳╴╵╶╷╸╹╺╻╼╽╾╿▀ ▂▃▄▅▆▇█▉▊▋▌▍▎▏▐░▒▓▔▕▖▗▘▙▚▛▜▝▞▟■□▢▣▤▥▦▧▨▩▪▫▬▭▮▯▰▱▲△▴▵▶▷▸▹►▻▼▽▾▿◀◁◂◃◄◅◆◇◈◉◊○◌◍◎●◐◑◒◓◔◕◖◗◘◙◚◛◜◝◞◟◠◡◢◣◤◥◦◧◨◩◪◫◬◭◮◯◰◱◲◳◴◵◶◷◸◹◺◻◼◽◾◿",
+                enabled: false,
+                description: 'Drawing and geometric elements.'
+            },
+            'Dingbats & Misc': {
+                value: "★☆☀☁☂☃☄☠☢☣♠♣♥♦♪♫✔✖✳❄‼©€¡¢£¤¥¦§¨ª«¬®¯°±²³´µ¶·¸¹º»¼½¾¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿŁłŃńŅņŇňŊŋŌōŎŏŐőŒœŔŕŖŗŘřŚśŜŝŞşŠšŢţŤťŦŧŨũŪūŬŭŮůŰůŴŵŶŷŸŹźŻżŽžſƆƎƜɐɑɒɔɘəɛɜɞɟɡɢɥɨɪɬɮɯɰɴɵɶɷɸɹʁʇʌʍʎʞ",
+                enabled: false,
+                description: 'Punctuation, arrows, chess, and card symbols.'
+            },
+            'Emoji': {
+                value: "☹☺☻☼☽☾☿♀♁♂♃♄♅♆♇♈♉♊♋♌♍♎♏♐♑♒♓♔♕♖♗♘♙♚♛♜♝♞♟♠♡♢♣♤♥♦♧♨♩♪♫♬♭♮♯♲♳♴♵♶♷♸♹♺♻♼♽♾♿⚀⚁⚂⚃⚄⚅⚐⚑⚒⚓⚔⚕⚖⚗⚘⚙⚛⚜⚝⚞⚟⚠⚡⚢⚣⚤⚥⚦⚧⚨⚩⚪⚫⚬⚭⚮⚯⚰⚱⚲⚳⚴⚵⚶⚷⚸⚹⚺⚻⚼⛀⛁⛂⛃⛢⛤⛥⛦⛧⛨⛩⛪⛫⛬⛭⛮⛯⛰⛱⛲⛳⛴⛵⛶⛷⛸⛹⛺⛻⛼⛽⛾⛿✁✂✃✄✅✆✇✈✉✊✋✌✍✎✏✐✑✒✓✔✕✖✗✘✙✚✛✜✝✞✟✠✡✢✣✤✥✦✧✨✩✪✫✬✭✮✯✰✱✲✳✴✵✶✷✸✹✺✻✼✽✾✿❀❁❂❃❄❅❆❇❈❉❊❋❌❍❎❏❐❑❒❓❔❕❖❗❘❙❚❛❜❝❞❟❠❡❢❣❤❥❦❧➔➘➙➚➛➜➝➞➟➠➡➢➣➤➥➦➧➨➩➪➫➬➭➮➯➱➲➳➴➵➶➷➸➹➺➻➼➽➾⟰⟱⟲⟳⟴⟵⟶⟷⟸⟹⟺⟻⟼⟽⟾⟿⤀⤁⤂⤃⤄⤅⤆⤇⤈⤉⤊⤋⤌⤍⤎⤏⤐⤑⤒⤓⤔⤕⤖⤗⤘⤙⤚⤛⤜⤝⤞⤟⤠⤡⤢⤣⤤⤥⤦⤧⤨⤩⤪⤫⤬⤭⤮⤯⤰⤱⤲⤳⤴⤵⤶⤷⤸⤹⤺⤻⤼⤽⤾⤿0⥁⥂⥃⥄⥅⥆⥇⥈⥉⥊⥋⥌⥍⥎⥏⥐1⬀⬁⬂⬃⬄⬅⬆⬇⬈⬉⬊⬋⬌⬍⬎⬏⬐1⬒⬓⬔⬕⬖⬗⬘⬙⬚",
+                enabled: false,
+                description: 'Various emoji, zodiac, and cultural symbols.'
+            }
+        };
+        
         const RENDER_THRESHOLD = 50; // Max number of passwords to render individually
         let lastGeneratedPasswords = []; // Stores the last generated array for download
-
-        // Display the pool size on load
-        document.getElementById('pool-size').textContent = `${POOL_SIZE} unique characters`;
+        let activePool = ""; // The dynamically calculated pool
 
         // --- Utility Functions ---
 
@@ -250,22 +406,23 @@
          */
         function rateEntropy(entropy) {
             const e = parseFloat(entropy);
-            if (e < 40) return { rating: "Very Weak", color: "text-red-500" };
-            if (e < 60) return { rating: "Weak", color: "text-orange-500" };
-            if (e < 80) return { rating: "Moderate", color: "text-yellow-500" };
-            if (e < 100) return { rating: "Strong", color: "text-blue-500" };
-            return { rating: "Very Strong", color: "text-green-500" };
+            if (e < 40) return { rating: "Very Weak (< 1h)", color: "text-red-500" };
+            if (e < 60) return { rating: "Weak (< 1 day)", color: "text-orange-500" };
+            if (e < 80) return { rating: "Moderate (~1 year)", color: "text-yellow-500" };
+            if (e < 100) return { rating: "Strong (~1000 years)", color: "text-blue-400" };
+            return { rating: "Very Strong (> 1 million years)", color: "text-green-500" };
         }
 
         /**
          * Generates a secure password using cryptographically random values.
          * @param {number} length - The desired password length.
+         * @param {string} pool - The active character pool string.
          * @returns {string} The generated password.
          */
-        function generatePassword(length) {
-            if (length <= 0) return "";
+        function generatePassword(length, pool) {
+            if (length <= 0 || pool.length === 0) return "";
             let password = '';
-            const poolLength = UNICODE_POOL.length;
+            const poolLength = pool.length;
 
             // Generate enough random bytes (Uint32 is 4 bytes, allowing a large range)
             const randomBytes = new Uint32Array(length);
@@ -275,7 +432,7 @@
             for (let i = 0; i < length; i++) {
                 // Use modulus operation to map the random number to an index within the pool
                 const randomIndex = randomBytes[i] % poolLength;
-                password += UNICODE_POOL.charAt(randomIndex);
+                password += pool.charAt(randomIndex);
             }
             return password;
         }
@@ -310,11 +467,14 @@
         function copyToClipboard(text) {
             const tempTextArea = document.createElement('textarea');
             tempTextArea.value = text;
+            tempTextArea.style.position = "fixed"; // Prevents scrolling
+            tempTextArea.style.opacity = "0"; // Invisible
             document.body.appendChild(tempTextArea);
             tempTextArea.select();
             try {
-                document.execCommand('copy');
-                return true;
+                // For cross-browser compatibility in iframes
+                const successful = document.execCommand('copy');
+                return successful;
             } catch (err) {
                 console.error('Copy failed:', err);
                 return false;
@@ -323,40 +483,96 @@
             }
         }
 
-        // --- Event Listeners ---
+        // --- Core Logic ---
 
-        document.getElementById('generate-button').addEventListener('click', () => {
+        /**
+         * Updates the activePool string and recalculates entropy based on current settings.
+         */
+        function updatePoolAndEntropy() {
+            let currentPool = "";
+            let poolCount = 0;
+            const length = parseInt(document.getElementById('length').value) || 0;
+            const charsetOptionsDiv = document.getElementById('charset-options');
+            const warningElement = document.getElementById('charset-warning');
+            const generateButton = document.getElementById('generate-button');
+            
+            // 1. Build the active pool
+            Object.keys(CHAR_SETS).forEach(key => {
+                const checkbox = document.getElementById(`charset-${key.replace(/[^a-zA-Z0-9]/g, '-')}`);
+                if (checkbox && checkbox.checked) {
+                    currentPool += CHAR_SETS[key].value;
+                }
+            });
+
+            // Remove duplicate characters just in case, though the defined sets minimize this
+            activePool = [...new Set(currentPool)].join('');
+            poolCount = activePool.length;
+
+            // 2. Update UI stats
+            const entropy = calculateEntropy(length, poolCount);
+            const strength = rateEntropy(entropy);
+
+            document.getElementById('pool-size').textContent = `${poolCount.toLocaleString()} unique characters`;
+            document.getElementById('entropy-bits').textContent = `${entropy} bits`;
+            document.getElementById('strength-rating').textContent = strength.rating;
+            document.getElementById('strength-rating').className = `${strength.color} text-2xl font-extrabold mt-1`;
+            
+            // 3. Handle minimum pool size for generation
+            if (poolCount === 0) {
+                warningElement.classList.remove('hidden');
+                generateButton.disabled = true;
+                generateButton.classList.add('cursor-not-allowed');
+            } else {
+                warningElement.classList.add('hidden');
+                generateButton.disabled = false;
+                generateButton.classList.remove('cursor-not-allowed');
+            }
+        }
+
+        /**
+         * Generates and displays the requested number of passwords.
+         */
+        async function generateAndDisplayPasswords() {
             const lengthInput = document.getElementById('length');
             const countInput = document.getElementById('count');
             const outputDiv = document.getElementById('password-output');
+            const generateButton = document.getElementById('generate-button');
+            const generateText = document.getElementById('generate-text');
+            const loadingSpinner = document.getElementById('loading-spinner');
+            const downloadCount = document.getElementById('download-count');
 
-            let length = parseInt(lengthInput.value);
-            let count = parseInt(countInput.value);
+            let length = parseInt(lengthInput.value) || 8;
+            let count = parseInt(countInput.value) || 1;
 
             // Input Validation and correction
-            if (isNaN(length) || length < 8) length = 8;
-            if (isNaN(count) || count < 1) count = 1;
-            if (count > 10000) count = 10000; // Enforce max
+            length = Math.min(Math.max(length, 8), 128);
+            count = Math.min(Math.max(count, 1), 10000);
 
             lengthInput.value = length;
             countInput.value = count;
 
-            // 1. Calculate and display Entropy
-            const entropy = calculateEntropy(length, POOL_SIZE);
-            const strength = rateEntropy(entropy);
+            if (activePool.length === 0) return; // Should be disabled by updatePoolAndEntropy
 
-            document.getElementById('entropy-bits').textContent = `${entropy} bits`;
-            document.getElementById('strength-rating').textContent = strength.rating;
-            document.getElementById('strength-rating').className = `${strength.color} text-2xl font-extrabold mt-1`;
+            // Set loading state
+            generateButton.disabled = true;
+            generateButton.classList.add('cursor-wait');
+            generateText.textContent = "Generating...";
+            loadingSpinner.classList.remove('hidden');
+            outputDiv.innerHTML = '<p class="text-indigo-400 text-center py-4 animate-pulse">Generating security tokens...</p>';
 
-            // 2. Generate Passwords
+
+            // Wait a moment to allow the UI to update
+            await new Promise(resolve => setTimeout(resolve, 50)); 
+
+            // 1. Generate Passwords
             const passwords = [];
             for (let i = 0; i < count; i++) {
-                passwords.push(generatePassword(length));
+                passwords.push(generatePassword(length, activePool));
             }
             lastGeneratedPasswords = passwords; // Store for download
+            downloadCount.textContent = passwords.length.toLocaleString();
 
-            // 3. Display Passwords/Summary
+            // 2. Display Passwords/Summary
             outputDiv.innerHTML = ''; // Clear previous output
 
             if (count > RENDER_THRESHOLD) {
@@ -364,10 +580,11 @@
                 outputDiv.innerHTML = `
                     <div class="p-6 bg-yellow-900/50 border border-yellow-500 rounded-xl text-yellow-300 shadow-inner">
                         <p class="font-bold text-xl mb-2 flex items-center">
+                            <!-- Checkmark Icon -->
                             <svg class="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
                             Generation Complete
                         </p>
-                        <p>Successfully generated <span class="font-bold">${count}</span> passwords of length <span class="font-bold">${length}</span>.</p>
+                        <p>Successfully generated <span class="font-bold">${count.toLocaleString()}</span> passwords of length <span class="font-bold">${length}</span>.</p>
                         <p class="mt-3 text-sm">Individual passwords are not displayed here due to performance limits. Please use the <strong>Download Button</strong> below to save the complete list securely.</p>
                     </div>
                 `;
@@ -378,10 +595,10 @@
                     const passwordItem = document.createElement('div');
                     passwordItem.className = 'password-container relative flex items-center justify-between p-4 bg-gray-600 rounded-lg transition duration-200 shadow-md border border-gray-500 hover:bg-gray-500';
                     passwordItem.innerHTML = `
-                        <span class="text-sm font-semibold text-indigo-400 mr-4">#${index + 1}:</span>
+                        <span class="text-sm font-semibold text-indigo-400 mr-4 whitespace-nowrap">#${index + 1}:</span>
                         <code class="flex-grow text-lg break-all font-mono text-gray-100">${pwd}</code>
-                        <button class="copy-button ml-4 p-2 rounded-full bg-indigo-700 hover:bg-indigo-600 transition duration-300 shadow-lg"
-                                 data-password="${pwd}" title="Copy to Clipboard">
+                        <button class="copy-button ml-4 p-2 rounded-full bg-indigo-700 hover:bg-indigo-600 transition duration-300 shadow-lg flex-shrink-0"
+                                data-password="${pwd}" title="Copy to Clipboard">
                             <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v7M8 5H6M4 12H3m14 0h1m-5 0v3m0 0v-3"></path></svg>
                         </button>
                     `;
@@ -393,22 +610,92 @@
                     button.addEventListener('click', (e) => {
                         const textToCopy = e.currentTarget.getAttribute('data-password');
                         if (copyToClipboard(textToCopy)) {
-                            const originalContent = e.currentTarget.innerHTML;
-                            e.currentTarget.innerHTML = '<svg class="w-5 h-5 text-green-300" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>'; // Checkmark
+                            const originalIcon = button.innerHTML;
+                            button.innerHTML = '<svg class="w-5 h-5 text-green-300" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>'; // Checkmark
 
                             setTimeout(() => {
-                                e.currentTarget.innerHTML = originalContent;
+                                button.innerHTML = originalIcon;
                             }, 1500);
                         }
                     });
                 });
             }
-        });
+            
+            // Restore button state
+            generateButton.disabled = false;
+            generateButton.classList.remove('cursor-wait');
+            generateText.textContent = "Generate Passwords";
+            loadingSpinner.classList.add('hidden');
+        }
 
+
+        // Function to handle the Bash script copy action and display notification
+        function handleBashScriptCopy() {
+            const codeElement = document.getElementById('bash-script-code');
+            const codeText = codeElement.textContent;
+            const notification = document.getElementById('bash-copy-notification');
+
+            if (copyToClipboard(codeText)) {
+                // Show notification
+                notification.classList.remove('hidden', 'opacity-0');
+                notification.classList.add('opacity-100');
+                
+                // Hide notification after 3 seconds
+                setTimeout(() => {
+                    notification.classList.remove('opacity-100');
+                    notification.classList.add('opacity-0');
+                    // Wait for transition to finish before hiding element completely
+                    setTimeout(() => {
+                        notification.classList.add('hidden');
+                    }, 300);
+                }, 3000);
+            }
+        }
+
+
+        /**
+         * Dynamically creates the character set checkboxes.
+         */
+        function initializeCharsetOptions() {
+            const container = document.getElementById('charset-options');
+            Object.keys(CHAR_SETS).forEach(key => {
+                const set = CHAR_SETS[key];
+                const id = `charset-${key.replace(/[^a-zA-Z0-9]/g, '-')}`;
+                
+                const html = `
+                    <div class="flex items-start">
+                        <input type="checkbox" id="${id}" ${set.enabled ? 'checked' : ''} 
+                               class="h-4 w-4 text-indigo-600 bg-gray-600 border-gray-500 rounded focus:ring-indigo-500 cursor-pointer">
+                        <label for="${id}" class="ml-2 text-gray-300 cursor-pointer">
+                            <span class="font-medium">${key}</span>
+                            <p class="text-xs text-gray-400 mt-0">${set.description}</p>
+                        </label>
+                    </div>
+                `;
+                container.insertAdjacentHTML('beforeend', html);
+                
+                // Add event listener to live update entropy
+                document.getElementById(id).addEventListener('change', updatePoolAndEntropy);
+            });
+        }
+
+
+        // --- Event Listeners and Initialization ---
+
+        document.getElementById('generate-button').addEventListener('click', generateAndDisplayPasswords);
         document.getElementById('download-button').addEventListener('click', downloadPasswords);
+        document.getElementById('copy-bash-button').addEventListener('click', handleBashScriptCopy); // New listener
+        
+        // Listen to changes in length and count to live-update entropy
+        document.getElementById('length').addEventListener('input', updatePoolAndEntropy);
+        document.getElementById('count').addEventListener('input', updatePoolAndEntropy);
 
-        // Trigger generation on load to populate initial entropy/size
+
+        // Initial setup on document load
         document.addEventListener('DOMContentLoaded', () => {
+            initializeCharsetOptions();
+            updatePoolAndEntropy();
+            // Automatically trigger a generation on load
             document.getElementById('generate-button').click();
         });
     </script>
