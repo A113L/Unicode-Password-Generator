@@ -89,13 +89,123 @@
                 <p class="text-gray-400 text-center py-4">Click "Generate Passwords" to begin.</p>
             </div>
 
-            <!-- Download Section - ALWAYS VISIBLE NOW -->
+            <!-- Secure Storage Warning -->
+            <div class="mt-8 p-4 bg-red-900/40 border border-red-700 rounded-lg shadow-inner">
+                <p class="text-lg font-bold text-red-300 flex items-center mb-1">
+                    <svg class="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M18 8a6 6 0 01-7.743 5.743L10 14l-.257-.257A6 6 0 1118 8zm-7.414 2.586a1 1 0 00-1.414 1.414l.707.707-.707.707a1 1 0 001.414 1.414l.707-.707 1.414 1.414a1 1 0 001.414-1.414l-.707-.707.707-.707a1 1 0 00-1.414-1.414l-.707.707-.707-.707z" clip-rule="evenodd"></path></svg>
+                    CRITICAL: Secure Storage Required
+                </p>
+                <p class="text-sm text-red-200">
+                    These passwords are for high-security use. Do not store them unencrypted. We strongly recommend using a reputable, open-source password manager like <a href="https://keepass.info/" target="_blank" class="text-red-100 underline hover:text-red-500 font-semibold">KeePass</a> or <a href="https://bitwarden.com/" target="_blank" class="text-red-100 underline hover:text-red-500 font-semibold">Bitwarden</a>.
+                </p>
+            </div>
+
+            <!-- Download Section -->
             <div id="download-section" class="mt-6 pt-4 border-t border-gray-700">
                 <button id="download-button" class="w-full py-3 text-lg font-semibold rounded-lg bg-teal-600 hover:bg-teal-700 text-white transition duration-300 shadow-lg flex items-center justify-center">
                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
                     Download Passwords List (.txt)
                 </button>
             </div>
+        </section>
+
+        <!-- Security Guide Section (EMBEDDED CONTENT) -->
+        <section class="mt-4 p-6 bg-gray-700 rounded-2xl shadow-2xl">
+            <h2 class="text-3xl font-bold text-red-300 mb-4 flex items-center">
+                <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                🔒 OpenSSL File Encryption Guide (Linux/macOS)
+            </h2>
+            <p class="text-gray-300 mb-6 border-b border-indigo-600 pb-4">
+                This guide shows you how to encrypt the downloaded password list file (`unicode_passwords_X.txt`) using the powerful <strong>AES-256-CBC</strong> cipher via the OpenSSL command-line tool.
+            </p>
+
+            <!-- Prerequisites -->
+            <h3 class="text-xl font-semibold text-gray-100 mb-2">Prerequisites</h3>
+            <p class="text-gray-400 mb-6">
+                You must have <strong>OpenSSL</strong> installed on your system, which is standard on most Linux distributions and macOS.
+            </p>
+
+            <!-- Step 1 -->
+            <h3 class="text-xl font-semibold text-gray-100 mb-3 border-t pt-4 border-gray-600">Step 1: Encrypt the File</h3>
+            <p class="text-gray-400 mb-3">
+                Navigate to the directory where you downloaded your password file (e.g., <code class="bg-gray-800 p-1 rounded">~/Downloads</code>).
+            </p>
+
+            <!-- Table 1 -->
+            <div class="overflow-x-auto mb-4">
+                <table class="min-w-full divide-y divide-gray-600 rounded-lg overflow-hidden">
+                    <thead class="bg-indigo-700/50">
+                        <tr>
+                            <th class="px-4 py-2 text-left text-sm font-medium text-gray-100 uppercase tracking-wider">Command</th>
+                            <th class="px-4 py-2 text-left text-sm font-medium text-gray-100 uppercase tracking-wider">Description</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-gray-800 divide-y divide-gray-700">
+                        <tr><td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-indigo-400"><code>enc</code></td><td class="px-4 py-3 text-sm text-gray-300">The encryption/decryption function.</td></tr>
+                        <tr><td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-indigo-400"><code>-aes-256-cbc</code></td><td class="px-4 py-3 text-sm text-gray-300">Specifies the encryption algorithm (AES 256-bit with Cipher Block Chaining).</td></tr>
+                        <tr><td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-indigo-400"><code>-salt</code></td><td class="px-4 py-3 text-sm text-gray-300">Adds a random salt to prevent dictionary attacks (highly recommended).</td></tr>
+                        <tr><td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-indigo-400"><code>-in</code></td><td class="px-4 py-3 text-sm text-gray-300">The <strong>input file</strong> (your plain text password list).</td></tr>
+                        <tr><td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-indigo-400"><code>-out</code></td><td class="px-4 py-3 text-sm text-gray-300">The <strong>output file</strong> (your new encrypted file).</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h4 class="text-lg font-medium text-gray-200 mb-2">1.1. Execute the Encryption Command</h4>
+            <p class="text-gray-400 mb-2">Replace <code>[X]</code> with the number of passwords you generated (e.g., <code>3</code>).</p>
+            <div class="bg-gray-900 p-4 rounded-lg overflow-x-auto text-sm font-mono text-green-400 mb-4">
+                <code>openssl enc -aes-256-cbc -salt -in unicode_passwords_X.txt -out secure_passwords.enc</code>
+            </div>
+
+            <h4 class="text-lg font-medium text-gray-200 mb-2">1.2. Set Your Encryption Passphrase</h4>
+            <p class="text-gray-400 mb-2">After running the command, OpenSSL will prompt you to enter and verify your master password for this file.</p>
+            <p class="font-bold text-red-400 mt-2 p-2 bg-gray-900 rounded-lg">
+                CRITICAL: The passphrase you enter here is the **only way** to decrypt the file. Store it securely.
+            </p>
+
+            <h4 class="text-lg font-medium text-gray-200 mb-2 mt-4">1.3. Delete the Original File</h4>
+            <p class="text-gray-400 mb-2">Once the encrypted file (<code class="bg-gray-800 p-1 rounded">secure_passwords.enc</code>) is confirmed, securely delete the plain text original:</p>
+            <div class="bg-gray-900 p-4 rounded-lg overflow-x-auto text-sm font-mono text-green-400 mb-4">
+                <code>shred -zu unicode_passwords_X.txt</code>
+            </div>
+            
+            <!-- Step 2 -->
+            <h3 class="text-xl font-semibold text-gray-100 mb-3 border-t pt-4 border-gray-600">Step 2: Decrypt the File</h3>
+            <p class="text-gray-400 mb-3">
+                When you need to access your passwords, you must decrypt the <code class="bg-gray-800 p-1 rounded">.enc</code> file.
+            </p>
+
+            <!-- Table 2 -->
+            <div class="overflow-x-auto mb-4">
+                <table class="min-w-full divide-y divide-gray-600 rounded-lg overflow-hidden">
+                    <thead class="bg-indigo-700/50">
+                        <tr>
+                            <th class="px-4 py-2 text-left text-sm font-medium text-gray-100 uppercase tracking-wider">Command</th>
+                            <th class="px-4 py-2 text-left text-sm font-medium text-gray-100 uppercase tracking-wider">Description</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-gray-800 divide-y divide-gray-700">
+                        <tr><td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-indigo-400"><code>enc</code></td><td class="px-4 py-3 text-sm text-gray-300">The encryption/decryption function.</td></tr>
+                        <tr><td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-indigo-400"><code>-d</code></td><td class="px-4 py-3 text-sm text-gray-300">Specifies the <strong>decryption</strong> mode.</td></tr>
+                        <tr><td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-indigo-400"><code>-aes-256-cbc</code></td><td class="px-4 py-3 text-sm text-gray-300">Use the same algorithm as encryption.</td></tr>
+                        <tr><td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-indigo-400"><code>-in</code></td><td class="px-4 py-3 text-sm text-gray-300">The <strong>encrypted input file</strong>.</td></tr>
+                        <tr><td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-indigo-400"><code>-out</code></td><td class="px-4 py-3 text-sm text-gray-300">The <strong>output file</strong> where the decrypted content will be saved.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h4 class="text-lg font-medium text-gray-200 mb-2">2.1. Execute the Decryption Command</h4>
+            <div class="bg-gray-900 p-4 rounded-lg overflow-x-auto text-sm font-mono text-green-400 mb-4">
+                <code>openssl enc -d -aes-256-cbc -in secure_passwords.enc -out decrypted_passwords.txt</code>
+            </div>
+
+            <h4 class="text-lg font-medium text-gray-200 mb-2">2.2. Enter the Passphrase</h4>
+            <p class="text-gray-400 mb-2">OpenSSL will prompt you for the master passphrase you set in Step 1.</p>
+            <p class="text-gray-400 mb-2">Once successful, a new file named <code class="bg-gray-800 p-1 rounded">decrypted_passwords.txt</code> will appear.</p>
+            <p class="text-gray-400 mb-2"><strong>Remember to delete this plain text file when you are finished using the information!</strong></p>
+            <div class="bg-gray-900 p-4 rounded-lg overflow-x-auto text-sm font-mono text-green-400">
+                <code>shred -zu decrypted_passwords.txt</code>
+            </div>
+
         </section>
     </div>
 
@@ -109,7 +219,7 @@
             "あいうえおかきくけこさしすせそたちつてとなにぬねのアイウエオカキクケコサシスセソタチツテトナニヌネノ" +
             "漢字日本語中文测试字符∞±≠∑∏√∫∂∆πµΩ≈≡≤≥∇¢£¥€₩₪₹₽฿₫₴₦₲" +
             "★☆☀☁☂☃☄☠☢☣♠♣♥♦♪♫✔✖✳❄‼" +
-            "©€¡¢£¤¥¦§¨ª«¬®¯°±²³´µ¶·¸¹º»¼½¾¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿŁłŃńŅņŇňŊŋŌōŎŏŐőŒœŔŕŖŗŘřŚśŜŝŞşŠšŢţŤťŦŧŨũŪūŬŭŮůŰůŴŵŶŷŸŹźŻżŽžſƆƎƜɐɑɒɔɘəɛɜɞɟɡɢɥɨɪɬɮɯɰɴɵɶɷɸɹʁʇʌʍʎʞΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩαβγδελμνξοπρςστυφχψωАБВГДЕЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдежзийклмнопрстуфхцчшщъыьэюяᴀᴁᴂᴃᴄᴅᴆᴇᴈᴉᴊᴋᴌᴍᴎᴏᴐᴑᴒᴓᴔᴕᴖᴗᴘᴙᴚᴛᴜᴝᴞᴟᴠᴡᴢᴣᴤᴥᴦᴧᴨᴩᴪẞỲỳỴỵỸỹ‐‑‒–—―‖‗‘’‚‛“”„‟†‡•‣․‥…‧‰‱′″‴‵‶‷‸‹›※‽‾‿⁀⁁⁂⁃⁄⁅⁆⁇⁈⁉⁊⁋⁌⁍⁎⁏⁐⁑⁒⁓⁔⁕⁗⁰ⁱ⁴⁵⁶⁷⁸⁹⁺⁻⁼⁽⁾ⁿ₀₁₂₃₄₅₆₇₈₉₊₋₌₍₎₠₡₢₣₤₥₦₧₨₫₭₮₯₰₱₲₳₴₵₶₷₸₹℀℁ℂ℃℄℅℆ℇ℈℉ℊℋℌℍℎℏℐℑℒℓ℔ℕ№℗℘ℙℚℛℜℝ℞℟℠℡™℣ℤ℥℧ℨ℩KÅℬℭ℮ℯℰℱℲℳℴℵℶℷℸ⅁⅂⅃⅄ⅅⅆⅇⅈⅉ⅋ⅎ⅐⅑⅒⅓⅔⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞⅟ⅠⅡⅢⅣⅤⅥⅦⅧⅨⅩⅪⅫⅬⅭⅮⅯⅰⅱⅲⅳⅴⅵⅶⅷⅸⅹⅺⅻⅼⅽⅾⅿↄ←↑→↓↔↕↖↗↘↙↚↛↜↝↞↟↠↡↢↣↤↥↦↧↨↩↪↫↬↭↮↯↰↱↲↳↴↵↶↷↸↹↺↻↼↽↾↿⇀⇁⇂⇃⇄⇅⇆⇇⇈⇉⇊⇋⇌⇍⇎⇏⇐⇑⇒⇓⇔⇕⇖⇗⇘⇙⇚⇛⇜⇝⇞⇟⇠⇡⇢⇣⇤⇥⇦⇧⇨⇩⇪⇫⇬⇭⇮⇯⇰⇱⇲⇳⇴⇵⇶⇷⇸⇹⇺⇻⇼⇽⇾⇿∀∁∂∃∄∅∆∇∈∉∊∋∌∍∎∏∐∑−∓∔∕∖∗∘∙√∛∜∝∞∟∠∡∢∣∤∥∦∧∨∩∪∫∬∭∮∯∰∱∲∳∴∵∶∷∸∹∺∻∼∽∾∿≀≁≂≃≄≅≆≇≈≉≊≋≌≍≎≏≐≑≒≓≔≕≖≗≘≙≚≛≜≝≞≟≠≡≢≣≤≥≦≧≨≩≪≫≬≭≮≯≰≱≲≳≴≵≶≷≸≹≺≻≼≽≾≿⊀⊁⊂⊃⊄⊅⊆⊇⊈⊉⊊⊋⊌⊍⊎⊏⊐⊑⊒⊓⊔⊕⊖⊗⊘⊙⊚⊛⊜⊝⊞⊟⊠⊡⊢⊣⊤⊥⊦⊧⊨⊩⊪⊫⊬⊭⊮⊯⊰⊱⊲⊳⊴⊵⊶⊷⊸⊹⊺⊻⊼⊽⊾⊿⋀⋁⋂⋃⋄⋅⋆⋇⋈⋉⋊⋋⋌⋍⋎⋏⋐⋑⋒⋓⋔⋕⋖⋗⋘⋙⋚⋛⋜⋝⋞⋟⋠⋡⋢⋣⋤⋥⋦⋧⋨⋩⋪⋫⋬⋭⋮⋯⋰⋱⌀⌁⌂⌃⌄⌅⌆⌇⌈⌉⌊⌋⌐⌑⌒⌓⌔⌕⌖⌗⌘⌙⌚⌛⌠⌡⌢⌣⌤⌥⌦⌧⌨⌫⌬⎛⎜⎝⎞⎟⎠⎡⎢⎣⎤⎥⎦⎧⎨⎩⎪⎫⎬⎭⏎⏏⏚⏛⏰⏱⏲⏳␢␣─━│┃┄┅┆┇┈┉┊┋┌┍┎┏┐┑┒┓└┕┖┗┘┙┚┛├┝┞┟┠┡┢┣┤┥┦┧┨┩┪┫┬┭┮┯┰┱┲┳┴┵┶┷┸┹┺┻┼┽┾┿╀╁╂╃╄╅╆╇╈╉╊╋╌╍╎╏═║╒╓╔╕╖╗╘╙╚╛╜╝╞╟╠╡╢╣╤╥╦╧╨╩╪╫╬╭╮╯╰╱╲╳╴╵╶╷╸╹╺╻╼╽╾╿▀ ▂▃▄▅▆▇█▉▊▋▌▍▎▏▐░▒▓▔▕▖▗▘▙▚▛▜▝▞▟■□▢▣▤▥▦▧▨▩▪▫▬▭▮▯▰▱▲△▴▵▶▷▸▹►▻▼▽▾▿◀◁◂◃◄◅◆◇◈◉◊○◌◍◎●◐◑◒◓◔◕◖◗◘◙◚◛◜◝◞◟◠◡◢◣◤◥◦◧◨◩◪◫◬◭◮◯◰◱◲◳◴◵◶◷◸◹◺◻◼◽◾◿☀☁☂☃☄★☆☇☈☉☊☋☌☍☎☏☐☑☒☓☔☕☖☗☘☙☚☛☜☝☞☟☠☡☢☣☤☥☦☧☩☪☫☬☭☮☯☰☱☲☳☴☵☶☷☸☹☺☻☼☽☾☿♀♁♂♃♄♅♆♇♈♉♊♋♌♍♎♏♐♑♒♓♔♕♖♗♘♙♚♛♜♝♞♟♠♡♢♣♤♥♦♧♨♩♪♫♬♭♮♯♲♳♴♵♶♷♸♹♺♻♼♽♾♿⚀⚁⚂⚃⚄⚅⚐⚑⚒⚓⚔⚕⚖⚗⚘⚙⚛⚜⚝⚞⚟⚠⚡⚢⚣⚤⚥⚦⚧⚨⚩⚪⚫⚬⚭⚮⚯⚰⚱⚲⚳⚴⚵⚶⚷⚸⚹⚺⚻⚼⛀⛁⛂⛃⛢⛤⛥⛦⛧⛨⛩⛪⛫⛬⛭⛮⛯⛰⛱⛲⛳⛴⛵⛶⛷⛸⛹⛺⛻⛼⛽⛾⛿✁✂✃✄✅✆✇✈✉✊✋✌✍✎✏✐✑✒✓✔✕✖✗✘✙✚✛✜✝✞✟✠✡✢✣✤✥✦✧✨✩✪✫✬✭✮✯✰✱✲✳✴✵✶✷✸✹✺✻✼✽✾✿❀❁❂❃❄❅❆❇❈❉❊❋❌❍❎❏❐❑❒❓❔❕❖❗❘❙❚❛❜❝❞❟❠❡❢❣❤❥❦❧➔➘➙➚➛➜➝➞➟➠➡➢➣➤➥➦➧➨➩➪➫➬➭➮➯➱➲➳➴➵➶➷➸➹➺➻➼➽➾⟰⟱⟲⟳⟴⟵⟶⟷⟸⟹⟺⟻⟼⟽⟾⟿⤀⤁⤂⤃⤄⤅⤆⤇⤈⤉⤊⤋⤌⤍⤎⤏⤐⤑⤒⤓⤔⤕⤖⤗⤘⤙⤚⤛⤜⤝⤞⤟⤠⤡⤢⤣⤤⤥⤦⤧⤨⤩⤪⤫⤬⤭⤮⤯⤰⤱⤲⤳⤴⤵⤶⤷⤸⤹⤺⤻⤼⤽⤾⤿⥀⥁⥂⥃⥄⥅⥆⥇⥈⥉⥊⥋⥌⥍⥎⥏⥐⥑⬀⬁⬂⬃⬄⬅⬆⬇⬈⬉⬊⬋⬌⬍⬎⬏⬐⬑⬒⬓⬔⬕⬖⬗⬘⬙⬚ⱠⱡⱣⱥⱦⱭⱯⱰ⸢⸣⸤⸥⸮〃〄ﬀﬁﬂﬃﬄﬅﬆ﴾﴿﷼︐︑︒︓︔︕︖︗︘︙︰︱︲︳︴︵︶︷︸︹︺︻︼︽︾︿﹀﹁﹂﹃﹄﹅﹆﹉﹊﹋﹌﹍﹎﹏﹐﹑﹒﹔﹕﹖﹗﹘﹙﹚﹛﹜﹝﹞﹟﹠﹡﹢﹣﹤﹥﹦﹨﹩﹪﹫﻿！＂＃＄％＆＇（）＊＋，－．／０１２３４５６７８９：；＜＝＞？＠ＡＢＣＤＥＦＧＨＩＪＫＬＭＮＯＰＱＲＳＴＵＶＷＸＹＺ［＼］＾＿｀ａｂｃｄｅｆｇｈｉｊｋｌｍｎｏｐｑｒｓｔｕｖｗｘｙｚ｛｜｝～｟｠￠￡￢￣￤￥￦";
+            "©€¡¢£¤¥¦§¨ª«¬®¯°±²³´µ¶·¸¹º»¼½¾¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿŁłŃńŅņŇňŊŋŌōŎŏŐőŒœŔŕŖŗŘřŚśŜŝŞşŠšŢţŤťŦŧŨũŪūŬŭŮůŰůŴŵŶŷŸŹźŻżŽžſƆƎƜɐɑɒɔɘəɛɜɞɟɡɢɥɨɪɬɮɯɰɴɵɶɷɸɹʁʇʌʍʎʞΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩαβγδελμνξοπρςστυφχψωАБВГДЕЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдежзийклмнопрстуфхцчшщъыьэюяᴀᴁᴂᴃᴄᴅᴆᴇᴈᴉᴊᴋᴌᴍᴎᴏᴐᴑᴒᴓᴔᴕᴖᴗᴘᴙᴚᴛᴜᴝᴞᴟᴠᴡᴢᴣᴤᴥᴦᴧᴨᴩᴪẞỲỳỴỵỸỹ‐‑‒–—―‖‗‘’‚‛“”„‟†‡•‣․‥…‧‰‱′″‴‵‶‷‸‹›※‽‾‿⁀⁁⁂⁃⁄⁅⁆⁇⁈⁉⁊⁋⁌⁍⁎⁏⁐⁑⁒⁓⁔⁕⁗⁰ⁱ⁴⁵⁶⁷⁸⁹⁺⁻⁼⁽⁾ⁿ₀₁₂₃₄₅₆₇₈₉₊₋₌₍₎₠₡₢₣₤₥₦₧₨₫₭₮₯₰₱₲₳₴₵₶₷₸₹℀℁ℂ℃℄℅℆ℇ℈℉ℊℋℌℍℎℏℐℑℒℓ℔ℕ№℗℘ℙℚℛℜℝ℞℟℠℡™℣ℤ℥℧ℨ℩KÅℬℭ℮ℯℰℱℲℳℴℵℶℷℸ⅁⅂⅃⅄ⅅⅆⅇⅈⅉ⅋ⅎ⅐⅑⅒⅓⅔⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞⅟ⅠⅡⅢⅣⅤⅥⅦⅧⅨⅩⅪⅫⅬⅭⅮⅯⅰⅱⅲⅳⅴⅵⅶⅷⅸⅹⅺⅻⅼⅽⅾⅿↄ←↑→↓↔↕↖↗↘↙↚↛↜↝↞↟↠↡↢↣↤↥↦↧↨↩↪↫↬↭↮↯↰↱↲↳↴↵↶↷↸↹↺↻↼↽↾↿⇀⇁⇂⇃⇄⇅⇆⇇⇈⇉⇊⇋⇌⇍⇎⇏⇐⇑⇒⇓⇔⇕⇖⇗⇘⇙⇚⇛⇜⇝⇞⇟⇠⇡⇢⇣⇤⇥⇦⇧⇨⇩⇪⇫⇬⇭⇮⇯⇰⇱⇲⇳⇴⇵⇶⇷⇸⇹⇺⇻⇼⇽⇾⇿∀∁∂∃∄∅∆∇∈∉∊∋∌∍∎∏∐∑−∓∔∕∖∗∘∙√∛∜∝∞∟∠∡∢∣∤∥∦∧∨∩∪∫∬∭∮∯∰∱∲∳∴∵∶∷∸∹∺∻∼∽∾∿≀≁≂≃≄≅≆≇≈≉≊≋≌≍≎≏≐≑≒≓≔≕≖≗≘≙≚≛≜≝≞≟≠≡≢≣≤≥≦≧≨≩≪≫≬≭≮≯≰≱≲≳≴≵≶≷≸≹≺≻≼≽≾≿⊀⊁⊂⊃⊄⊅⊆⊇⊈⊉⊊⊋⊌⊍⊎⊏⊐⊑⊒⊓⊔⊕⊖⊗⊘⊙⊚⊛⊜⊝⊞⊟⊠⊡⊢⊣⊤⊥⊦⊧⊨⊩⊪⊫⊬⊭⊮⊯⊰⊱⊲⊳⊴⊵⊶⊷⊸⊹⊺⊻⊼⊽⊾⊿⋀⋁⋂⋃⋄⋅⋆⋇⋈⋉⋊⋋⋌⋍⋎⋏⋐⋑⋒⋓⋔⋕⋖⋗⋘⋙⋚⋛⋜⋝⋞⋟⋠⋡⋢⋣⋤⋥⋦⋧⋨⋩⋪⋫⋬⋭⋮⋯⋰⋱⌀⌁⌂⌃⌄⌅⌆⌇⌈⌉⌊⌋⌐⌑⌒⌓⌔⌕⌖⌗⌘⌙⌚⌛⌠⌡⌢⌣⌤⌥⌦⌧⌨⌫⌬⎛⎜⎝⎞⎟⎠⎡⎢⎣⎤⎥⎦⎧⎨⎩⎪⎫⎬⎭⏎⏏⏚⏛⏰⏱⏲⏳␢␣─━│┃┄┅┆┇┈┉┊┋┌┍┎┏┐┑┒┓└┕┖┗┘┙┚┛├┝┞┟┠┡┢┣┤┥┦┧┨┩┪┫┬┭┮┯┰┱┲┳┴┵┶┷┸┹┺┻┼┽┾┿╀╁╂╃╄╅╆╇╈╉╊╋╌╍╎╏═║╒╓╔╕╖╗╘╙╚╛╜╝╞╟╠╡╢╣╤╥╦╧╨╩╪╫╬╭╮╯╰╱╲╳╴╵╶╷╸╹╺╻╼╽╾╿▀ ▂▃▄▅▆▇█▉▊▋▌▍▎▏▐░▒▓▔▕▖▗▘▙▚▛▜▝▞▟■□▢▣▤▥▦▧▨▩▪▫▬▭▮▯▰▱▲△▴▵▶▷▸▹►▻▼▽▾▿◀◁◂◃◄◅◆◇◈◉◊○◌◍◎●◐◑◒◓◔◕◖◗◘◙◚◛◜◝◞◟◠◡◢◣◤◥◦◧◨◩◪◫◬◭◮◯◰◱◲◳◴◵◶◷◸◹◺◻◼◽◾◿☀☁☂☃☄★☆☇☈☉☊☋☌☍☎☏☐☑☒☓☔☕☖☗☘☙☚☛☜☝☞☟☠☡☢☣☤☥☦☧☩☪☫☬☭☮☯☰☱☲☳☴☵☶☷☸☹☺☻☼☽☾☿♀♁♂♃♄♅♆♇♈♉♊♋♌♍♎♏♐♑♒♓♔♕♖♗♘♙♚♛♜♝♞♟♠♡♢♣♤♥♦♧♨♩♪♫♬♭♮♯♲♳♴♵♶♷♸♹♺♻♼♽♾♿⚀⚁⚂⚃⚄⚅⚐⚑⚒⚓⚔⚕⚖⚗⚘⚙⚛⚜⚝⚞⚟⚠⚡⚢⚣⚤⚥⚦⚧⚨⚩⚪⚫⚬⚭⚮⚯⚰⚱⚲⚳⚴⚵⚶⚷⚸⚹⚺⚻⚼⛀⛁⛂⛃⛢⛤⛥⛦⛧⛨⛩⛪⛫⛬⛭⛮⛯⛰⛱⛲⛳⛴⛵⛶⛷⛸⛹⛺⛻⛼⛽⛾⛿✁✂✃✄✅✆✇✈✉✊✋✌✍✎✏✐✑✒✓✔✕✖✗✘✙✚✛✜✝✞✟✠✡✢✣✤✥✦✧✨✩✪✫✬✭✮✯✰✱✲✳✴✵✶✷✸✹✺✻✼✽✾✿❀❁❂❃❄❅❆❇❈❉❊❋❌❍❎❏❐❑❒❓❔❕❖❗❘❙❚❛❜❝❞❟❠❡❢❣❤❥❦❧➔➘➙➚➛➜➝➞➟➠➡➢➣➤➥➦➧➨➩➪➫➬➭➮➯➱➲➳➴➵➶➷➸➹➺➻➼➽➾⟰⟱⟲⟳⟴⟵⟶⟷⟸⟹⟺⟻⟼⟽⟾⟿⤀⤁⤂⤃⤄⤅⤆⤇⤈⤉⤊⤋⤌⤍⤎⤏⤐⤑⤒⤓⤔⤕⤖⤗⤘⤙⤚⤛⤜⤝⤞⤟⤠⤡⤢⤣⤤⤥⤦⤧⤨⤩⤪⤫⤬⤭⤮⤯⤰⤱⤲⤳⤴⤵⤶⤷⤸⤹⤺⤻⤼⤽⤾⤿⥀⥁⥂⥃⥄⥅⥆⥇⥈⥉⥊⥋⥌⥍⥎⥏⥐⥑⬀⬁⬂⬃⬄⬅⬆⬇⬈⬉⬊⬋⬌⬍⬎⬏⬐⬑⬒⬓⬔⬕⬖⬗⬘⬙⬚ⱠⱡⱣⱥⱦⱭⱯⱰ⸢⸣⸤⸥⸮〃 ﬀﬁﬂﬃﬄﬅﬆ﴾﴿﷼︐︑︒︓︔︕︖︗︘︙︰︱︲︳︴︵︶︷︸︹︺︻︼︽︾︿﹀﹁﹂﹃﹄﹅﹆﹉﹊﹋﹌﹍﹎﹏﹐﹑﹒﹔﹕﹖﹗﹘﹙﹚﹛﹜﹝﹞﹟﹠﹡﹢﹣﹤﹥﹦﹨﹩﹪﹫﻿！＂＃＄％＆＇（）＊＋，－．／０１２３４５６７８９：；＜＝＞？＠ＡＢＣＤＥＦＧＨＩＪＫＬＭＮＯＰＱＲＳＴＵＶＷＸＹＺ［＼］＾＿｀ａｂｃｄｅｆｇｈｉｊｋｌｍｎｏｐｑｒｓｔｕｖｗｘｙｚ｛｜｝～｟｠￠￡￢￣￤￥￦";
 
         const POOL_SIZE = 2802; // Updated to reflect the massive new pool
         const RENDER_THRESHOLD = 50; // Max number of passwords to render individually
@@ -304,4 +414,3 @@
     </script>
 </body>
 </html>
-
