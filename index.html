@@ -20,9 +20,7 @@
     </style>
 </head>
 <body class="bg-gray-900 text-gray-100 min-h-screen flex items-center justify-center p-4">
-
     <div class="w-full max-w-4xl bg-gray-800 rounded-2xl shadow-2xl p-6 md:p-10 border border-indigo-700/50">
-        
         <!-- Header -->
         <header class="text-center mb-10">
             <h1 class="text-4xl md:text-5xl font-extrabold text-indigo-400 mb-2 tracking-tight">
@@ -36,9 +34,8 @@
         <!-- Generation Parameters -->
         <section class="mb-8 p-6 bg-gray-700 rounded-xl shadow-lg">
             <h2 class="text-2xl font-bold text-gray-100 mb-4 border-b border-indigo-600 pb-2">Generation Settings</h2>
-            
+
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                
                 <!-- Password Length -->
                 <div>
                     <label for="length" class="block text-sm font-medium text-gray-300 mb-2">Password Length</label>
@@ -47,15 +44,15 @@
                     <p class="mt-1 text-sm text-gray-400">Recommended: 16 to 32 characters.</p>
                 </div>
 
-                <!-- Number of Passwords -->
+                <!-- Number of Passwords (Max updated to 10000) -->
                 <div>
                     <label for="count" class="block text-sm font-medium text-gray-300 mb-2">Number of Passwords</label>
-                    <input type="number" id="count" value="3" min="1" max="10"
+                    <input type="number" id="count" value="3" min="1" max="10000"
                            class="w-full p-3 rounded-lg bg-gray-600 border border-gray-500 text-gray-100 focus:ring-indigo-500 focus:border-indigo-500 appearance-none transition duration-150">
-                    <p class="mt-1 text-sm text-gray-400">Generate multiple passwords at once.</p>
+                    <p class="mt-1 text-sm text-gray-400">Generate up to 10,000 passwords at once.</p>
                 </div>
             </div>
-            
+
             <!-- Generate Button -->
             <button id="generate-button"
                     class="mt-8 w-full py-4 text-xl font-bold rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white transition duration-300 transform hover:scale-[1.01] shadow-xl shadow-indigo-500/30">
@@ -65,13 +62,13 @@
 
         <!-- Entropy and Strength Display -->
         <section class="mb-8 p-6 bg-gray-700 rounded-xl shadow-lg grid grid-cols-1 md:grid-cols-2 gap-4">
-            
+
             <!-- Pool Size -->
             <div class="bg-gray-600 p-4 rounded-lg">
                 <p class="text-sm font-medium text-gray-300">Character Pool Size</p>
                 <p id="pool-size" class="text-2xl font-extrabold text-white mt-1">...</p>
             </div>
-            
+
             <!-- Entropy -->
             <div class="bg-gray-600 p-4 rounded-lg">
                 <p class="text-sm font-medium text-gray-300">Calculated Entropy</p>
@@ -91,6 +88,14 @@
             <div id="password-output" class="space-y-3">
                 <p class="text-gray-400 text-center py-4">Click "Generate Passwords" to begin.</p>
             </div>
+
+            <!-- Download Section - ALWAYS VISIBLE NOW -->
+            <div id="download-section" class="mt-6 pt-4 border-t border-gray-700">
+                <button id="download-button" class="w-full py-3 text-lg font-semibold rounded-lg bg-teal-600 hover:bg-teal-700 text-white transition duration-300 shadow-lg flex items-center justify-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                    Download Passwords List (.txt)
+                </button>
+            </div>
         </section>
     </div>
 
@@ -99,18 +104,20 @@
             "ąćęłńóśźżĄĆĘŁŃÓŚŹŻäöüßÄÖÜ" +
             "абвгдеёжзийклмнопрстуфхцчшщъыьэюяАБВГДЕЁЖЗИЙКЛМНОПРСТФХЦЧШЩЪЫЬЭЮЯ" +
             "èéêëēėęùúûüūîïíīįìôöòóœøãåáàâæçñ" +
-            "กขคฆงจฉชซฌญฎฏฐฑฒณดตถทธนบปผฝพฟภมยรฤลฦวศษสหฬอฮ" +
+            "กขคฆงจฉชซฌญฎฏฐฑฒณดตถทธนบปผฝพฟภมยรฤลऌวศษสหฬอฮ" +
             "अआइईउऊऋएऐओऔकखगघचछजझटठडढणतथदधनपफबभमयरलवशषसह" +
             "あいうえおかきくけこさしすせそたちつてとなにぬねのアイウエオカキクケコサシスセソタチツテトナニヌネノ" +
             "漢字日本語中文测试字符∞±≠∑∏√∫∂∆πµΩ≈≡≤≥∇¢£¥€₩₪₹₽฿₫₴₦₲" +
             "★☆☀☁☂☃☄☠☢☣♠♣♥♦♪♫✔✖✳❄‼";
-        
+
         const POOL_SIZE = UNICODE_POOL.length;
+        const RENDER_THRESHOLD = 50; // Max number of passwords to render individually
+        let lastGeneratedPasswords = []; // Stores the last generated array for download
 
         // Display the pool size on load
         document.getElementById('pool-size').textContent = `${POOL_SIZE} unique characters`;
 
-        // --- Entropy Calculation Functions ---
+        // --- Utility Functions ---
 
         /**
          * Calculates Shannon Entropy: H = L * log2(N)
@@ -139,8 +146,6 @@
             return { rating: "Very Strong", color: "text-green-500" };
         }
 
-        // --- Password Generation Function (Cryptographically Secure) ---
-
         /**
          * Generates a secure password using cryptographically random values.
          * @param {number} length - The desired password length.
@@ -150,7 +155,7 @@
             if (length <= 0) return "";
             let password = '';
             const poolLength = UNICODE_POOL.length;
-            
+
             // Generate enough random bytes (Uint32 is 4 bytes, allowing a large range)
             const randomBytes = new Uint32Array(length);
             // window.crypto is the browser's cryptographically secure random number generator
@@ -163,92 +168,138 @@
             }
             return password;
         }
-        
-        // --- UI Rendering and Event Handling ---
+
+        /**
+         * Saves the globally stored passwords to a local .txt file.
+         */
+        function downloadPasswords() {
+            if (lastGeneratedPasswords.length === 0) {
+                console.error("No passwords to download. Generate passwords first.");
+                return;
+            }
+
+            // Create a single string with each password on a new line
+            const textContent = lastGeneratedPasswords.join('\n');
+            const blob = new Blob([textContent], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+
+            // Create a temporary anchor element for download
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `unicode_passwords_${lastGeneratedPasswords.length}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+
+            // Clean up the URL object
+            URL.revokeObjectURL(url);
+        }
+
+        // Function to handle copying text (using execCommand for better iFrame compatibility)
+        function copyToClipboard(text) {
+            const tempTextArea = document.createElement('textarea');
+            tempTextArea.value = text;
+            document.body.appendChild(tempTextArea);
+            tempTextArea.select();
+            try {
+                document.execCommand('copy');
+                return true;
+            } catch (err) {
+                console.error('Copy failed:', err);
+                return false;
+            } finally {
+                document.body.removeChild(tempTextArea);
+            }
+        }
+
+        // --- Event Listeners ---
 
         document.getElementById('generate-button').addEventListener('click', () => {
             const lengthInput = document.getElementById('length');
             const countInput = document.getElementById('count');
-            
+            const outputDiv = document.getElementById('password-output');
+
             let length = parseInt(lengthInput.value);
             let count = parseInt(countInput.value);
 
             // Input Validation and correction
             if (isNaN(length) || length < 8) length = 8;
             if (isNaN(count) || count < 1) count = 1;
+            if (count > 10000) count = 10000; // Enforce max
 
-            lengthInput.value = length; // Update UI if corrected
-            countInput.value = count;   // Update UI if corrected
+            lengthInput.value = length;
+            countInput.value = count;
 
             // 1. Calculate and display Entropy
             const entropy = calculateEntropy(length, POOL_SIZE);
             const strength = rateEntropy(entropy);
-            
+
             document.getElementById('entropy-bits').textContent = `${entropy} bits`;
             document.getElementById('strength-rating').textContent = strength.rating;
             document.getElementById('strength-rating').className = `${strength.color} text-2xl font-extrabold mt-1`;
 
-            // 2. Generate and display Passwords
-            const outputDiv = document.getElementById('password-output');
-            outputDiv.innerHTML = ''; // Clear previous output
-            
+            // 2. Generate Passwords
             const passwords = [];
             for (let i = 0; i < count; i++) {
                 passwords.push(generatePassword(length));
             }
+            lastGeneratedPasswords = passwords; // Store for download
 
-            // Function to handle copying text (using execCommand for better iFrame compatibility)
-            function copyToClipboard(text) {
-                const tempTextArea = document.createElement('textarea');
-                tempTextArea.value = text;
-                document.body.appendChild(tempTextArea);
-                tempTextArea.select();
-                try {
-                    document.execCommand('copy');
-                    return true;
-                } catch (err) {
-                    console.error('Copy failed:', err);
-                    return false;
-                } finally {
-                    document.body.removeChild(tempTextArea);
-                }
-            }
+            // 3. Display Passwords/Summary
+            outputDiv.innerHTML = ''; // Clear previous output
 
-            passwords.forEach((pwd, index) => {
-                const passwordItem = document.createElement('div');
-                passwordItem.className = 'password-container relative flex items-center justify-between p-4 bg-gray-600 rounded-lg transition duration-200 shadow-md border border-gray-500';
-                passwordItem.innerHTML = `
-                    <span class="text-sm font-semibold text-indigo-400 mr-4">#${index + 1}:</span>
-                    <code class="flex-grow text-lg break-all font-mono text-gray-100">${pwd}</code>
-                    <button class="copy-button ml-4 p-2 rounded-full bg-indigo-700 hover:bg-indigo-600 transition duration-300 transform translate-y-1 opacity-0 md:opacity-100" 
-                            data-password="${pwd}" title="Copy to Clipboard">
-                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v7M8 5H6M4 12H3m14 0h1m-5 0v3m0 0v-3"></path></svg>
-                    </button>
+            if (count > RENDER_THRESHOLD) {
+                // Display summary for large batches (no individual rendering for performance)
+                outputDiv.innerHTML = `
+                    <div class="p-6 bg-yellow-900/50 border border-yellow-500 rounded-xl text-yellow-300 shadow-inner">
+                        <p class="font-bold text-xl mb-2 flex items-center">
+                            <svg class="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+                            Generation Complete
+                        </p>
+                        <p>Successfully generated <span class="font-bold">${count}</span> passwords of length <span class="font-bold">${length}</span>.</p>
+                        <p class="mt-3 text-sm">Individual passwords are not displayed here due to performance limits. Please use the <strong>Download Button</strong> below to save the complete list securely.</p>
+                    </div>
                 `;
-                outputDiv.appendChild(passwordItem);
-            });
-            
-            // Add event listeners to copy buttons
-            document.querySelectorAll('.copy-button').forEach(button => {
-                button.addEventListener('click', (e) => {
-                    const textToCopy = e.currentTarget.getAttribute('data-password');
-                    if (copyToClipboard(textToCopy)) {
-                        const originalContent = e.currentTarget.innerHTML;
-                        e.currentTarget.innerHTML = '<svg class="w-5 h-5 text-green-300" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>'; // Checkmark
-                        
-                        setTimeout(() => {
-                            e.currentTarget.innerHTML = originalContent;
-                        }, 1500);
-                    }
+
+            } else {
+                // Render individual passwords for small batches
+                passwords.forEach((pwd, index) => {
+                    const passwordItem = document.createElement('div');
+                    passwordItem.className = 'password-container relative flex items-center justify-between p-4 bg-gray-600 rounded-lg transition duration-200 shadow-md border border-gray-500 hover:bg-gray-500';
+                    passwordItem.innerHTML = `
+                        <span class="text-sm font-semibold text-indigo-400 mr-4">#${index + 1}:</span>
+                        <code class="flex-grow text-lg break-all font-mono text-gray-100">${pwd}</code>
+                        <button class="copy-button ml-4 p-2 rounded-full bg-indigo-700 hover:bg-indigo-600 transition duration-300 shadow-lg"
+                                 data-password="${pwd}" title="Copy to Clipboard">
+                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v7M8 5H6M4 12H3m14 0h1m-5 0v3m0 0v-3"></path></svg>
+                        </button>
+                    `;
+                    outputDiv.appendChild(passwordItem);
                 });
-            });
+
+                // Add event listeners to copy buttons
+                document.querySelectorAll('.copy-button').forEach(button => {
+                    button.addEventListener('click', (e) => {
+                        const textToCopy = e.currentTarget.getAttribute('data-password');
+                        if (copyToClipboard(textToCopy)) {
+                            const originalContent = e.currentTarget.innerHTML;
+                            e.currentTarget.innerHTML = '<svg class="w-5 h-5 text-green-300" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>'; // Checkmark
+
+                            setTimeout(() => {
+                                e.currentTarget.innerHTML = originalContent;
+                            }, 1500);
+                        }
+                    });
+                });
+            }
         });
+
+        document.getElementById('download-button').addEventListener('click', downloadPasswords);
 
         // Trigger generation on load to populate initial entropy/size
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('generate-button').click();
         });
-
     </script>
 </body>
 </html>
