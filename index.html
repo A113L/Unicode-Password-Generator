@@ -553,6 +553,9 @@ main_menu</code></pre>
 
             if (activePool.length === 0) return; // Should be disabled by updatePoolAndEntropy
 
+            // --- DEBUGGING LINE ADDED ---
+            console.log(`[DEBUG] Attempting to generate ${count} passwords of length ${length}. Pool size: ${activePool.length}`); 
+
             // Set loading state
             generateButton.disabled = true;
             generateButton.classList.add('cursor-wait');
