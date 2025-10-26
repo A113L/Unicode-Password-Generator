@@ -12,11 +12,43 @@
         body {
             font-family: 'Inter', sans-serif;
         }
-        /* Custom styles for the password display and copy button */
-        .password-container:hover .copy-icon {
-            opacity: 1;
-            transform: translateY(0);
+
+        /* --- Custom Slider Styles --- */
+        .slider-container input[type="range"] {
+            /* Webkit (Chrome/Safari) */
+            -webkit-appearance: none;
+            width: 100%;
+            height: 8px;
+            background: #4f46e5; /* Tailwind indigo-600 for track */
+            border-radius: 5px;
+            outline: none;
+            transition: opacity .2s;
         }
+
+        .slider-container input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #c7d2fe; /* Tailwind indigo-200 for thumb */
+            cursor: pointer;
+            border: 2px solid #fff;
+            box-shadow: 0 0 5px rgba(0,0,0,0.3);
+        }
+
+        .slider-container input[type="range"]::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #c7d2fe;
+            cursor: pointer;
+            border: 2px solid #fff;
+            box-shadow: 0 0 5px rgba(0,0,0,0.3);
+        }
+        /* --- End Custom Slider Styles --- */
+
+
         /* Hide number input spinners */
         input[type='number']::-webkit-inner-spin-button,
         input[type='number']::-webkit-outer-spin-button {
@@ -61,19 +93,36 @@
             <h2 class="text-2xl font-bold text-gray-100 mb-4 border-b border-indigo-600 pb-2">Generation Settings</h2>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                <!-- Password Length -->
+                
+                <!-- Password Length Controller -->
                 <div>
-                    <label for="length" class="block text-sm font-medium text-gray-300 mb-2">Password Length</label>
-                    <input type="number" id="length" value="20" min="8" max="128"
-                            class="w-full p-3 rounded-lg bg-gray-600 border border-gray-500 text-gray-100 focus:ring-indigo-500 focus:border-indigo-500 appearance-none transition duration-150">
+                    <label for="length-input" class="block text-sm font-medium text-gray-300 mb-2">
+                        Password Length: <span id="length-display" class="text-indigo-400 font-bold">20</span>
+                    </label>
+                    <div class="flex space-x-3 items-center slider-container">
+                        <!-- Range Slider -->
+                        <input type="range" id="length-slider" min="8" max="128" value="20" step="1" class="flex-grow">
+                        
+                        <!-- Text Input -->
+                        <input type="number" id="length-input" value="20" min="8" max="128"
+                               class="w-20 p-2 rounded-lg bg-gray-600 border border-gray-500 text-gray-100 text-center focus:ring-indigo-500 focus:border-indigo-500 appearance-none transition duration-150">
+                    </div>
                     <p class="mt-1 text-sm text-gray-400">Recommended: 16 to 32 characters.</p>
                 </div>
 
-                <!-- Number of Passwords -->
+                <!-- Number of Passwords Controller -->
                 <div>
-                    <label for="count" class="block text-sm font-medium text-gray-300 mb-2">Number of Passwords</label>
-                    <input type="number" id="count" value="3" min="1" max="10000"
-                            class="w-full p-3 rounded-lg bg-gray-600 border border-gray-500 text-gray-100 focus:ring-indigo-500 focus:border-indigo-500 appearance-none transition duration-150">
+                    <label for="count-input" class="block text-sm font-medium text-gray-300 mb-2">
+                        Number of Passwords: <span id="count-display" class="text-indigo-400 font-bold">3</span>
+                    </label>
+                    <div class="flex space-x-3 items-center slider-container">
+                        <!-- Range Slider (Max set to 100 for better slider control, input allows 10000) -->
+                        <input type="range" id="count-slider" min="1" max="100" value="3" step="1" class="flex-grow">
+                        
+                        <!-- Text Input -->
+                        <input type="number" id="count-input" value="3" min="1" max="10000"
+                               class="w-20 p-2 rounded-lg bg-gray-600 border border-gray-500 text-gray-100 text-center focus:ring-indigo-500 focus:border-indigo-500 appearance-none transition duration-150">
+                    </div>
                     <p class="mt-1 text-sm text-gray-400">Generate up to 10,000 passwords at once.</p>
                 </div>
             </div>
@@ -87,7 +136,6 @@
                 <span class="inline-block w-4 h-4 mr-1 bg-yellow-500 rounded-full animate-pulse"></span>
                 Warning: You must select at least one character set.
             </p>
-
 
             <!-- Generate Button -->
             <button id="generate-button"
@@ -108,19 +156,16 @@
                 <p class="text-sm font-medium text-gray-300">Active Character Pool Size</p>
                 <p id="pool-size" class="text-2xl font-extrabold text-white mt-1">...</p>
             </div>
-
             <!-- Entropy -->
             <div class="bg-gray-600 p-4 rounded-lg">
                 <p class="text-sm font-medium text-gray-300">Logarithmic Entropy (Bits)</p>
                 <p id="entropy-bits" class="text-2xl font-extrabold text-white mt-1">0.00 bits</p>
             </div>
-
             <!-- Strength Rating -->
             <div class="bg-gray-600 p-4 rounded-lg">
                 <p class="text-sm font-medium text-gray-300">Estimated Strength Rating</p>
                 <p id="strength-rating" class="text-2xl font-extrabold text-red-500 mt-1">N/A</p>
             </div>
-
         </section>
 
         <!-- Password Output -->
@@ -140,6 +185,15 @@
                 <p class="text-sm text-red-200">
                     These passwords are for high-security use. Do not store them unencrypted. We strongly recommend using a reputable, open-source password manager like <a href="https://keepass.info/" target="_blank" class="text-red-100 underline hover:text-red-500 font-semibold">KeePass</a> or <a href="https://bitwarden.com/" target="_blank" class="text-red-100 underline hover:text-red-500 font-semibold">Bitwarden</a>.
                 </p>
+                <!-- FDE SECTION -->
+                <div class="mt-4 pt-4 border-t border-red-800">
+                    <p class="text-md font-extrabold text-red-100 mb-1">
+                        Full Disk Encryption (FDE) is Mandatory
+                    </p>
+                    <p class="text-sm text-red-200">
+                        As a baseline defense, ensure **Full Disk Encryption (FDE)** (e.g., BitLocker, FileVault, LUKS) is active on your device. FDE prevents unauthorized access if the device is physically lost or stolen, making all data, including your password manager and sensitive files, unreadable without the correct key.
+                    </p>
+                </div>
             </div>
 
             <!-- Download Section -->
@@ -152,7 +206,7 @@
             </div>
         </section>
 
-        <!-- BASH SCRIPT FILE ENCRYPTION GUIDE SECTION (Integrated from index.html) -->
+        <!-- BASH SCRIPT FILE ENCRYPTION GUIDE SECTION -->
         <section class="mt-4 p-6 bg-gray-700 rounded-2xl shadow-2xl">
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 border-b border-indigo-600 pb-2">
                 <h2 class="text-3xl font-bold text-red-300 flex items-center mb-2 sm:mb-0">
@@ -211,7 +265,6 @@ encrypt_file() {
 
     OUTPUT_FILE="${INPUT_FILE}${ENCRYPT_EXT}"
     get_password
-
     echo -e "\nEncrypting '$INPUT_FILE' to '$OUTPUT_FILE'..."
 
     # Use openssl with PBKDF2 for robust key derivation
@@ -253,7 +306,7 @@ decrypt_file() {
         if [ -z "$OUTPUT_FILE" ]; then
             error_message "No output filename provided. Aborting decryption."
             return 1
-        fi
+        }
     fi
 
     if [ -f "$OUTPUT_FILE" ]; then
@@ -262,7 +315,6 @@ decrypt_file() {
     fi
 
     get_password
-
     echo -e "\nDecrypting '$INPUT_FILE' to '$OUTPUT_FILE'..."
 
     # Use openssl to decrypt, including -pbkdf2 to match the encryption method
@@ -309,8 +361,7 @@ main_menu() {
 # Start the main script process
 main_menu</code></pre>
             </div>
-            
-            <h3 class="text-xl font-semibold text-gray-100 mb-3 border-t pt-4 border-gray-600">How to Use the Script:</h3>
+                        <h3 class="text-xl font-semibold text-gray-100 mb-3 border-t pt-4 border-gray-600">How to Use the Script:</h3>
             <ol class="list-decimal list-inside space-y-2 text-gray-400">
                 <li>Click **Copy Script** above.</li>
                 <li>Save the copied code to a file named <code class="bg-gray-900 px-1 py-0.5 rounded text-sm font-mono text-indigo-400">file_protector.sh</code> on your Linux or macOS machine.</li>
@@ -322,15 +373,18 @@ main_menu</code></pre>
             </p>
 
         </section>
-
     </div>
 
     <!-- Notification element for the Bash script copy action (must be outside the main div) -->
-    <div id="bash-copy-notification" class="hidden fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-4 py-2 rounded-lg shadow-xl transition-opacity duration-300 z-50 opacity-0">
-        Bash Script copied to clipboard!
+    <div id="bash-copy-notification" class="hidden fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-indigo-700 text-white px-4 py-2 rounded-lg shadow-xl transition-opacity duration-300 z-50 opacity-0 font-semibold">
+        Content copied to clipboard!
     </div>
 
     <script>
+        // --- Rate Limiting Constants ---
+        const COOLDOWN_MS = 500; // 500 milliseconds cool-down between generations
+        let lastGenerationTime = 0; // Timestamp of the last successful generation attempt
+        
         // --- Character Pool Definitions (Refactored for clarity) ---
         const CHAR_SETS = {
             'Latin (Standard)': {
@@ -376,16 +430,11 @@ main_menu</code></pre>
             'Emoji': {
                 value: "☹☺☻☼☽☾☿♀♁♂♃♄♅♆♇♈♉♊♋♌♍♎♏♐♑♒♓♔♕♖♗♘♙♚♛♜♝♞♟♠♡♢♣♤♥♦♧♨♩♪♫♬♭♮♯♲♳♴♵♶♷♸♹♺♻♼♽♾♿⚀⚁⚂⚃⚄⚅⚐⚑⚒⚓⚔⚕⚖⚗⚘⚙⚛⚜⚝⚞⚟⚠⚡⚢⚣⚤⚥⚦⚧⚨⚩⚪⚫⚬⚭⚮⚯⚰⚱⚲⚳⚴⚵⚶⚷⚸⚹⚺⚻⚼⛀⛁⛂⛃⛢⛤⛥⛦⛧⛨⛩⛪⛫⛬⛭⛮⛯⛰⛱⛲⛳⛴⛵⛶⛷⛸⛹⛺⛻⛼⛽⛾⛿✁✂✃✄✅✆✇✈✉✊✋✌✍✎✏✐✑✒✓✔✕✖✗✘✙✚✛✜✝✞✟✠✡✢✣✤✥✦✧✨✩✪✫✬✭✮✯✰✱✲✳✴✵✶✷✸✹✺✻✼✽✾✿❀❁❂❃❄❅❆❇❈❉❊❋❌❍❎❏❐❑❒❓❔❕❖❗❘❙❚❛❜❝❞❟❠❡❢❣❤❥❦❧➔➘➙➚➛➜➝➞➟➠➡➢➣➤➥➦➧➨➩➪➫➬➭➮➯➱➲➳➴➵➶➷➸➹➺➻➼➽➾⟰⟱⟲⟳⟴⟵⟶⟷⟸⟹⟺⟻⟼⟽⟾⟿⤀⤁⤂⤃⤄⤅⤆⤇⤈⤉⤊⤋⤌⤍⤎⤏⤐⤑⤒⤓⤔⤕⤖⤗⤘⤙⤚⤛⤜⤝⤞⤟⤠⤡⤢⤣⤤⤥⤦⤧⤨⤩⤪⤫⤬⤭⤮⤯⤰⤱⤲⤳⤴⤵⤶⤷⤸⤹⤺⤻⤼⤽⤾⤿0⥁⥂⥃⥄⥅⥆⥇⥈⥉⥊⥋⥌⥍⥎⥏⥐1⬀⬁⬂⬃⬄⬅⬆⬇⬈⬉⬊⬋⬌⬍⬎⬏⬐1⬒⬓⬔⬕⬖⬗⬘⬙⬚",
                 enabled: false,
-                description: 'Punctuation, arrows, chess, and card symbols.'
-            },
-            'Emoji': {
-                value: "☹☺☻☼☽☾☿♀♁♂♃♄♅♆♇♈♉♊♋♌♍♎♏♐♑♒♓♔♕♖♗♘♙♚♛♜♝♞♟♠♡♢♣♤♥♦♧♨♩♪♫♬♭♮♯♲♳♴♵♶♷♸♹♺♻♼♽♾♿⚀⚁⚂⚃⚄⚅⚐⚑⚒⚓⚔⚕⚖⚗⚘⚙⚛⚜⚝⚞⚟⚠⚡⚢⚣⚤⚥⚦⚧⚨⚩⚪⚫⚬⚭⚮⚯⚰⚱⚲⚳⚴⚵⚶⚷⚸⚹⚺⚻⚼⛀⛁⛂⛃⛢⛤⛥⛦⛧⛨⛩⛪⛫⛬⛭⛮⛯⛰⛱⛲⛳⛴⛵⛶⛷⛸⛹⛺⛻⛼⛽⛾⛿✁✂✃✄✅✆✇✈✉✊✋✌✍✎✏✐✑✒✓✔✕✖✗✘✙✚✛✜✝✞✟✠✡✢✣✤✥✦✧✨✩✪✫✬✭✮✯✰✱✲✳✴✵✶✷✸✹✺✻✼✽✾✿❀❁❂❃❄❅❆❇❈❉❊❋❌❍❎❏❐❑❒❓❔❕❖❗❘❙❚❛❜❝❞❟❠❡❢❣❤❥❦❧➔➘➙➚➛➜➝➞➟➠➡➢➣➤➥➦➧➨➩➪➫➬➭➮➯➱➲➳➴➵➶➷➸➹➺➻➼➽➾⟰⟱⟲⟳⟴⟵⟶⟷⟸⟹⟺⟻⟼⟽⟾⟿⤀⤁⤂⤃⤄⤅⤆⤇⤈⤉⤊⤋⤌⤍⤎⤏⤐⤑⤒⤓⤔⤕⤖⤗⤘⤙⤚⤛⤜⤝⤞⤟⤠⤡⤢⤣⤤⤥⤦⤧⤨⤩⤪⤫⤬⤭⤮⤯⤰⤱⤲⤳⤴⤵⤶⤷⤸⤹⤺⤻⤼⤽⤾⤿0⥁⥂⥃⥄⥅⥆⥇⥈⥉⥊⥋⥌⥍⥎⥏⥐1⬀⬁⬂⬃⬄⬅⬆⬇⬈⬉⬊⬋⬌⬍⬎⬏⬐1⬒⬓⬔⬕⬖⬗⬘⬙⬚",
-                enabled: false,
                 description: 'Various emoji, zodiac, and cultural symbols.'
             }
         };
-        
-        const RENDER_THRESHOLD = 50; // Max number of passwords to render individually
+
+        const RENDER_THRESHOLD = 25; // Max number of passwords to render individually
         let lastGeneratedPasswords = []; // Stores the last generated array for download
         let activePool = ""; // The dynamically calculated pool
 
@@ -447,7 +496,8 @@ main_menu</code></pre>
          */
         function downloadPasswords() {
             if (lastGeneratedPasswords.length === 0) {
-                console.error("No passwords to download. Generate passwords first.");
+                // Use the notification system instead of alert()
+                showBashCopyNotification("Nothing to download. Generate passwords first!", "bg-orange-600");
                 return;
             }
 
@@ -466,9 +516,12 @@ main_menu</code></pre>
 
             // Clean up the URL object
             URL.revokeObjectURL(url);
+            showBashCopyNotification("Download initiated!", "bg-teal-600");
         }
 
-        // Function to handle copying text (using execCommand for better iFrame compatibility)
+        /**
+         * Function to handle copying text (using execCommand for better iFrame compatibility)
+         */
         function copyToClipboard(text) {
             const tempTextArea = document.createElement('textarea');
             tempTextArea.value = text;
@@ -488,23 +541,96 @@ main_menu</code></pre>
             }
         }
 
+        /**
+         * Shows a temporary notification at the bottom of the screen.
+         * @param {string} message - The message to display.
+         * @param {string} [bgColor="bg-indigo-700"] - Optional Tailwind background color class.
+         */
+        function showBashCopyNotification(message, bgColor = "bg-indigo-700") {
+            const notification = document.getElementById('bash-copy-notification');
+            // Reset classes
+            notification.className = "hidden fixed bottom-4 left-1/2 transform -translate-x-1/2 text-white px-4 py-2 rounded-lg shadow-xl transition-opacity duration-300 z-50 opacity-0 font-semibold";
+            notification.classList.add(bgColor);
+            
+            notification.textContent = message;
+            notification.classList.remove('hidden', 'opacity-0');
+            notification.classList.add('opacity-100');
+
+            setTimeout(() => {
+                notification.classList.remove('opacity-100');
+                notification.classList.add('opacity-0');
+                // Hide completely after the transition ends
+                setTimeout(() => {
+                    notification.classList.add('hidden');
+                }, 300); // Matches the transition duration
+            }, 2000);
+        }
+        
+        /**
+         * Synchronizes the value between a slider and its corresponding number input and display span.
+         * @param {HTMLElement} slider - The range input element.
+         * @param {HTMLElement} input - The number input element.
+         * @param {HTMLElement} display - The span element to show the value.
+         * @param {boolean} fromSlider - True if the event originated from the slider.
+         */
+        function syncSliderAndInput(slider, input, display, fromSlider = false) {
+            let value = parseFloat(fromSlider ? slider.value : input.value);
+            const min = parseFloat(input.min);
+            const maxInput = parseFloat(input.max);
+            
+            // Note: Slider max (100) and Input max (10000) are different for count, we use input max for validation
+
+            // Constraint check for input box (use the input's max/min)
+            if (value < min) {
+                value = min;
+                input.value = min;
+            } else if (value > maxInput) {
+                value = maxInput;
+                input.value = maxInput;
+            }
+            
+            // Update the slider's value only if it's within the slider's physical range
+            const sliderMax = parseFloat(slider.max);
+            if (value >= min && value <= sliderMax) {
+                 slider.value = value;
+            } else if (value > sliderMax) {
+                // If value is manually typed past the slider's max (e.g., 500 in count), snap slider to max
+                slider.value = sliderMax;
+            }
+
+
+            // Update input and display (always use the validated value)
+            input.value = value;
+            display.textContent = value.toLocaleString();
+
+            // Then recalculate entropy
+            updatePoolAndEntropy();
+        }
+
         // --- Core Logic ---
 
         /**
          * Updates the activePool string and recalculates entropy based on current settings.
          */
         function updatePoolAndEntropy() {
+            const lengthInput = document.getElementById('length-input');
+            
             let currentPool = "";
             let poolCount = 0;
-            const length = parseInt(document.getElementById('length').value) || 0;
+            // Read length value from the input field
+            const length = parseInt(lengthInput.value) || 0; 
             const charsetOptionsDiv = document.getElementById('charset-options');
             const warningElement = document.getElementById('charset-warning');
             const generateButton = document.getElementById('generate-button');
-            
+
             // 1. Build the active pool
             Object.keys(CHAR_SETS).forEach(key => {
-                const checkbox = document.getElementById(`charset-${key.replace(/[^a-zA-Z0-9]/g, '-')}`);
+                // Ensure ID generation matches setupCharsetOptions
+                const id = `charset-${key.replace(/[^a-zA-Z0-9]/g, '-')}`;
+                const checkbox = document.getElementById(id);
+
                 if (checkbox && checkbox.checked) {
+                    // This is slightly defensive; the structure prevents duplicates
                     currentPool += CHAR_SETS[key].value;
                 }
             });
@@ -520,17 +646,20 @@ main_menu</code></pre>
             document.getElementById('pool-size').textContent = `${poolCount.toLocaleString()} unique characters`;
             document.getElementById('entropy-bits').textContent = `${entropy} bits`;
             document.getElementById('strength-rating').textContent = strength.rating;
+            // Update class to reflect strength color
             document.getElementById('strength-rating').className = `${strength.color} text-2xl font-extrabold mt-1`;
-            
+
             // 3. Handle minimum pool size for generation
             if (poolCount === 0) {
                 warningElement.classList.remove('hidden');
                 generateButton.disabled = true;
                 generateButton.classList.add('cursor-not-allowed');
+                document.getElementById('download-button').disabled = true;
             } else {
                 warningElement.classList.add('hidden');
                 generateButton.disabled = false;
                 generateButton.classList.remove('cursor-not-allowed');
+                document.getElementById('download-button').disabled = (lastGeneratedPasswords.length === 0);
             }
         }
 
@@ -538,9 +667,23 @@ main_menu</code></pre>
          * Generates and displays the requested number of passwords.
          */
         async function generateAndDisplayPasswords() {
-            const lengthInput = document.getElementById('length');
-            const countInput = document.getElementById('count');
+            const now = Date.now();
+            const timeSinceLastGeneration = now - lastGenerationTime;
             const outputDiv = document.getElementById('password-output');
+
+            // --- RATE LIMIT CHECK ---
+            if (timeSinceLastGeneration < COOLDOWN_MS) {
+                // Calculate remaining time for user feedback
+                const remainingTime = ((COOLDOWN_MS - timeSinceLastGeneration) / 1000).toFixed(2);
+                outputDiv.innerHTML = `<p class="text-red-400 text-center py-4 font-semibold animate-pulse">Please wait ${remainingTime}s before generating again (500ms cooldown).</p>`;
+                return;
+            }
+
+            // Set the new last generation time right before starting
+            lastGenerationTime = now;
+
+            const lengthInput = document.getElementById('length-input');
+            const countInput = document.getElementById('count-input');
             const generateButton = document.getElementById('generate-button');
             const generateText = document.getElementById('generate-text');
             const loadingSpinner = document.getElementById('loading-spinner');
@@ -549,17 +692,15 @@ main_menu</code></pre>
             let length = parseInt(lengthInput.value) || 8;
             let count = parseInt(countInput.value) || 1;
 
-            // Input Validation and correction
+            // Input Validation (already constrained by syncSliderAndInput but repeated for safety)
             length = Math.min(Math.max(length, 8), 128);
             count = Math.min(Math.max(count, 1), 10000);
 
+            // Re-sync values just in case
             lengthInput.value = length;
             countInput.value = count;
 
             if (activePool.length === 0) return; // Should be disabled by updatePoolAndEntropy
-
-            // --- DEBUGGING LINE ADDED ---
-            console.log(`[DEBUG] Attempting to generate ${count} passwords of length ${length}. Pool size: ${activePool.length}`); 
 
             // Set loading state
             generateButton.disabled = true;
@@ -568,9 +709,8 @@ main_menu</code></pre>
             loadingSpinner.classList.remove('hidden');
             outputDiv.innerHTML = '<p class="text-indigo-400 text-center py-4 animate-pulse">Generating security tokens...</p>';
 
-
             // Wait a moment to allow the UI to update
-            await new Promise(resolve => setTimeout(resolve, 50)); 
+            await new Promise(resolve => setTimeout(resolve, 50));
 
             // 1. Generate Passwords
             const passwords = [];
@@ -579,6 +719,7 @@ main_menu</code></pre>
             }
             lastGeneratedPasswords = passwords; // Store for download
             downloadCount.textContent = passwords.length.toLocaleString();
+            document.getElementById('download-button').disabled = false;
 
             // 2. Display Passwords/Summary
             outputDiv.innerHTML = ''; // Clear previous output
@@ -596,7 +737,6 @@ main_menu</code></pre>
                         <p class="mt-3 text-sm">Individual passwords are not displayed here due to performance limits. Please use the <strong>Download Button</strong> below to save the complete list securely.</p>
                     </div>
                 `;
-
             } else {
                 // Render individual passwords for small batches
                 passwords.forEach((pwd, index) => {
@@ -611,101 +751,121 @@ main_menu</code></pre>
                         </button>
                     `;
                     outputDiv.appendChild(passwordItem);
-                });
 
-                // Add event listeners to copy buttons
-                document.querySelectorAll('.copy-button').forEach(button => {
-                    button.addEventListener('click', (e) => {
-                        const textToCopy = e.currentTarget.getAttribute('data-password');
-                        if (copyToClipboard(textToCopy)) {
-                            const originalIcon = button.innerHTML;
-                            button.innerHTML = '<svg class="w-5 h-5 text-green-300" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>'; // Checkmark
-
-                            setTimeout(() => {
-                                button.innerHTML = originalIcon;
-                            }, 1500);
+                    // Add click handler to the newly created copy button
+                    passwordItem.querySelector('.copy-button').addEventListener('click', (event) => {
+                        const passwordToCopy = event.currentTarget.dataset.password;
+                        if (copyToClipboard(passwordToCopy)) {
+                            showBashCopyNotification("Password copied!");
                         }
                     });
                 });
             }
-            
-            // Restore button state
+
+            // 3. Reset Loading State
             generateButton.disabled = false;
             generateButton.classList.remove('cursor-wait');
             generateText.textContent = "Generate Passwords";
             loadingSpinner.classList.add('hidden');
         }
 
-
-        // Function to handle the Bash script copy action and display notification
-        function handleBashScriptCopy() {
-            const codeElement = document.getElementById('bash-script-code');
-            const codeText = codeElement.textContent;
-            const notification = document.getElementById('bash-copy-notification');
-
-            if (copyToClipboard(codeText)) {
-                // Show notification
-                notification.classList.remove('hidden', 'opacity-0');
-                notification.classList.add('opacity-100');
-                
-                // Hide notification after 3 seconds
-                setTimeout(() => {
-                    notification.classList.remove('opacity-100');
-                    notification.classList.add('opacity-0');
-                    // Wait for transition to finish before hiding element completely
-                    setTimeout(() => {
-                        notification.classList.add('hidden');
-                    }, 300);
-                }, 3000);
-            }
-        }
-
-
         /**
-         * Dynamically creates the character set checkboxes.
+         * Dynamically generates the character set checkboxes.
          */
-        function initializeCharsetOptions() {
+        function setupCharsetOptions() {
             const container = document.getElementById('charset-options');
             Object.keys(CHAR_SETS).forEach(key => {
-                const set = CHAR_SETS[key];
+                // Replace non-alphanumeric for a safe ID
                 const id = `charset-${key.replace(/[^a-zA-Z0-9]/g, '-')}`;
-                
+                const item = CHAR_SETS[key];
+                const checked = item.enabled ? 'checked' : '';
+
                 const html = `
-                    <div class="flex items-start">
-                        <input type="checkbox" id="${id}" ${set.enabled ? 'checked' : ''} 
-                               class="h-4 w-4 text-indigo-600 bg-gray-600 border-gray-500 rounded focus:ring-indigo-500 cursor-pointer">
-                        <label for="${id}" class="ml-2 text-gray-300 cursor-pointer">
-                            <span class="font-medium">${key}</span>
-                            <p class="text-xs text-gray-400 mt-0">${set.description}</p>
-                        </label>
-                    </div>
+                    <label for="${id}" class="flex items-start space-x-2 cursor-pointer p-2 rounded-lg bg-gray-600 hover:bg-gray-500 transition duration-150">
+                        <input type="checkbox" id="${id}" ${checked} name="charset" value="${key}" class="mt-0.5 h-4 w-4 text-indigo-600 bg-gray-700 border-gray-500 rounded focus:ring-indigo-500">
+                        <div class="leading-tight">
+                            <span class="font-semibold text-gray-100">${key}</span>
+                            <p class="text-xs text-gray-400">${item.description}</p>
+                        </div>
+                    </label>
                 `;
-                container.insertAdjacentHTML('beforeend', html);
-                
-                // Add event listener to live update entropy
-                document.getElementById(id).addEventListener('change', updatePoolAndEntropy);
+                container.innerHTML += html;
             });
         }
 
+        /**
+         * Sets up all necessary event listeners for the application.
+         */
+        function setupEventListeners() {
+            
+            // --- Elements for Length ---
+            const lengthInput = document.getElementById('length-input');
+            const lengthSlider = document.getElementById('length-slider');
+            const lengthDisplay = document.getElementById('length-display');
 
-        // --- Event Listeners and Initialization ---
+            // --- Elements for Count ---
+            const countInput = document.getElementById('count-input');
+            const countSlider = document.getElementById('count-slider');
+            const countDisplay = document.getElementById('count-display');
 
-        document.getElementById('generate-button').addEventListener('click', generateAndDisplayPasswords);
-        document.getElementById('download-button').addEventListener('click', downloadPasswords);
-        document.getElementById('copy-bash-button').addEventListener('click', handleBashScriptCopy); // New listener
-        
-        // Listen to changes in length and count to live-update entropy
-        document.getElementById('length').addEventListener('input', updatePoolAndEntropy);
-        document.getElementById('count').addEventListener('input', updatePoolAndEntropy);
+            // 1. Length Listeners
+            lengthSlider.addEventListener('input', () => syncSliderAndInput(lengthSlider, lengthInput, lengthDisplay, true));
+            lengthInput.addEventListener('change', () => syncSliderAndInput(lengthSlider, lengthInput, lengthDisplay, false));
+
+            // 2. Count Listeners
+            countSlider.addEventListener('input', () => syncSliderAndInput(countSlider, countInput, countDisplay, true));
+            countInput.addEventListener('change', () => syncSliderAndInput(countSlider, countInput, countDisplay, false));
 
 
-        // Initial setup on document load
-        document.addEventListener('DOMContentLoaded', () => {
-            initializeCharsetOptions();
-            updatePoolAndEntropy();
-            // Automatically trigger a generation on load
-            document.getElementById('generate-button').click();
-        });
+            // 3. Checkboxes (for real-time entropy calculation)
+            const charsetOptionsDiv = document.getElementById('charset-options');
+            charsetOptionsDiv.addEventListener('change', (e) => {
+                if (e.target.type === 'checkbox') {
+                    updatePoolAndEntropy();
+                }
+            });
+
+            // 4. Generate Button
+            document.getElementById('generate-button').addEventListener('click', generateAndDisplayPasswords);
+
+            // 5. Download Button
+            document.getElementById('download-button').addEventListener('click', downloadPasswords);
+
+            // 6. Copy Bash Script Button
+            const bashScriptCode = document.getElementById('bash-script-code').textContent;
+            document.getElementById('copy-bash-button').addEventListener('click', () => {
+                if (copyToClipboard(bashScriptCode)) {
+                    showBashCopyNotification("Bash Script copied to clipboard!", "bg-red-600");
+                }
+            });
+        }
+
+        /**
+         * Initializes the entire application on load.
+         */
+        function initApp() {
+            setupCharsetOptions();
+            setupEventListeners();
+            
+            // Initial synchronization to set values and entropy stats correctly
+            const lengthInput = document.getElementById('length-input');
+            const lengthSlider = document.getElementById('length-slider');
+            const lengthDisplay = document.getElementById('length-display');
+            syncSliderAndInput(lengthSlider, lengthInput, lengthDisplay, false);
+
+            const countInput = document.getElementById('count-input');
+            const countSlider = document.getElementById('count-slider');
+            const countDisplay = document.getElementById('count-display');
+            syncSliderAndInput(countSlider, countInput, countDisplay, false);
+
+            // Initial call to set pool size, entropy, and button state
+            updatePoolAndEntropy(); 
+        }
+
+        window.onload = initApp;
     </script>
+</body>
+</html>
+
 </body>
 </html>
